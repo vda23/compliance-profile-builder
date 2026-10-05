@@ -1,0 +1,14 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<oval_definitions xmlns="http://oval.mitre.org/XMLSchema/oval-definitions-5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:oval="http://oval.mitre.org/XMLSchema/oval-common-5" xmlns:ind="http://oval.mitre.org/XMLSchema/oval-definitions-5#independent" xmlns:unix="http://oval.mitre.org/XMLSchema/oval-definitions-5#unix" xmlns:linux="http://oval.mitre.org/XMLSchema/oval-definitions-5#linux" xmlns:windows="http://oval.mitre.org/XMLSchema/oval-definitions-5#windows">
+  <generator>
+    <oval:product_name>Custom</oval:product_name>
+    <oval:schema_version>5.11.2</oval:schema_version>
+    <oval:timestamp>2026-08-04T20:35:54Z</oval:timestamp>
+    <oval:product_version>1.0</oval:product_version>
+  </generator>
+  <definitions><definition id="oval:custom:def:1" version="1" class="compliance"><metadata><title>Длина истории паролей</title><description>Проверка, что password_hist_len &gt;= 24.</description><affected family="windows"><platform>Windows 10</platform><platform>Windows 11</platform><platform>Windows Server 2019</platform><platform>Windows Server 2022</platform></affected></metadata><criteria><criterion test_ref="oval:custom:tst:1" comment="password_hist_len"/></criteria></definition></definitions>
+  <tests><windows:passwordpolicy_test id="oval:custom:tst:1" version="1" check="all" check_existence="at_least_one_exists" comment="проверка password_hist_len"><windows:object object_ref="oval:custom:obj:1"/><windows:state state_ref="oval:custom:ste:1"/></windows:passwordpolicy_test></tests>
+  <objects><windows:passwordpolicy_object id="oval:custom:obj:1" version="1" comment="объект политики паролей"/></objects>
+  <states><windows:passwordpolicy_state id="oval:custom:ste:1" version="1" comment="проверка password_hist_len"><windows:password_hist_len var_ref="oval:custom:var:1"/></windows:passwordpolicy_state></states>
+  <variables><constant_variable id="oval:custom:var:1" version="1" datatype="int" comment="порог password_hist_len"><value>24</value></constant_variable></variables>
+</oval_definitions>

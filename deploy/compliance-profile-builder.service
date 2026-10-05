@@ -1,0 +1,26 @@
+# Справочный вид systemd-юнита. При установке через deploy/install.sh файл
+# создаётся автоматически с учётом выбранных параметров (--host, --port,
+# --user, --install-dir, сертификат) и помещается в /etc/systemd/system/.
+#
+# Сервису нужен только системный python3 (3.5+): внешних библиотек,
+# виртуального окружения и доступа в интернет не требуется.
+[Unit]
+Description=Compliance Profile Builder (конструктор профилей XCCDF/OVAL)
+After=network.target
+
+[Service]
+Type=simple
+User=cpbuilder
+Group=cpbuilder
+WorkingDirectory=/opt/compliance-profile-builder/backend
+Environment=CPB_DATA_DIR=/opt/compliance-profile-builder/data
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/usr/bin/python3 -m app.server --host 0.0.0.0 --port 8443 --cert /opt/compliance-profile-builder/certs/server.crt --key /opt/compliance-profile-builder/certs/server.key
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
