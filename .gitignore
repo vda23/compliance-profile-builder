@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Сертификаты и ключи, которые install.sh выпускает при установке
+certs/
+*.pem
+*.key
+*.crt
+
+# Рабочие данные: в репозитории хранятся только демонстрационные проекты
+data/projects/*
+!data/projects/example_*/
+
+# Готовые архивы публикуются на странице Releases, а не в репозитории
+*.zip
+
+# ОС и редакторы
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
