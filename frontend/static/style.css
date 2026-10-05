@@ -375,3 +375,98 @@ tr:last-child td { border-bottom: none; }
 .rules-checklist .checklist-all {
   border-bottom: 1px solid var(--line); padding-bottom: 8px; margin-bottom: 6px;
 }
+
+/* ---- Разбор нормативного документа ---- */
+.doc-review { max-height: 340px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; }
+.doc-review table { margin: 0; }
+.doc-review td { vertical-align: top; font-size: 12px; }
+.conf { font-size: 11px; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.conf-ok  { background: rgba(var(--accent-rgb), .16); color: var(--accent); }
+.conf-mid { background: rgba(var(--accent-rgb), .08); color: var(--text-dim); }
+.conf-low { background: var(--panel-2); color: var(--text-faint); }
+
+.report-grid { display: flex; gap: 10px; }
+.report-grid > div {
+  flex: 1; background: var(--panel-2); border: 1px solid var(--line);
+  border-radius: 8px; padding: 14px; display: flex; flex-direction: column; gap: 4px;
+}
+.report-grid b { font-size: 24px; color: var(--accent); line-height: 1; }
+.report-grid span { font-size: 11.5px; color: var(--text-dim); }
+.report-list { margin: 6px 0 0; padding-left: 18px; font-size: 12.5px; line-height: 1.5; }
+.report-list li { margin-bottom: 6px; }
+.modal-wide { width: 1080px; }
+
+/* ---- Повторный показ подсказки: явная подпись вместо одиночного «?» ----
+   Одиночный знак вопроса в углу баннера читался как кнопка закрытия. */
+.hint-reopen { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.hint-reopen-icon {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 1px solid var(--accent); color: var(--accent); font-size: 11px; font-weight: 700;
+}
+
+/* ---- Ссылка «Справка и настройки» ---- */
+.help-link {
+  display: block; width: 100%; margin-top: 6px; padding: 6px; border: none;
+  background: transparent; color: var(--text-dim); font: inherit; font-size: 12px;
+  cursor: pointer; text-align: center; text-decoration: underline; text-underline-offset: 3px;
+}
+.help-link:hover { color: var(--accent); }
+
+/* ---- Быстрый старт ---- */
+.onboarding { font-size: 13.5px; line-height: 1.55; }
+.onboarding h3 { margin: 16px 0 6px; font-size: 14px; }
+.onboarding ol { margin: 0; padding-left: 20px; }
+.onboarding ol li { margin-bottom: 4px; }
+.mode-compare { display: flex; gap: 10px; margin: 6px 0; }
+.mode-compare > div {
+  flex: 1; display: flex; flex-direction: column; gap: 4px;
+  background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 12px;
+}
+.mode-compare b { color: var(--accent); }
+.mode-compare span { font-size: 12.5px; color: var(--text-dim); }
+
+/* =====================================================================
+   Адаптивная вёрстка
+   Узкое окно или увеличенный масштаб браузера: боковая панель уходит
+   наверх, широкие таблицы прокручиваются внутри себя, а не растягивают
+   страницу, окна занимают всю ширину экрана.
+   ===================================================================== */
+.panel, #tab-content, #oval-subtab-content { overflow-x: auto; }
+table { min-width: 560px; }
+.doc-review table { min-width: 720px; }
+
+@media (max-width: 1100px) {
+  .main { padding: 20px 20px 48px; }
+  .grid { grid-template-columns: 1fr; }
+  .page-head { flex-wrap: wrap; gap: 6px; }
+  .page-head .page-id { word-break: break-all; }
+}
+
+@media (max-width: 860px) {
+  #app { flex-direction: column; }
+  .sidebar {
+    width: auto; min-width: 0; max-width: none; position: static;
+    border-right: none; border-bottom: 1px solid var(--line);
+    padding: 12px 14px; max-height: none;
+  }
+  .sidebar .project-list { max-height: 160px; overflow-y: auto; }
+  .main { padding: 16px 14px 40px; }
+  .wizard-step { font-size: 11px; padding: 4px 10px 4px 4px; }
+  .wizard-hint-banner { flex-wrap: wrap; }
+  .modal, .modal-wide { width: 100vw; max-width: 100vw; max-height: 100vh; border-radius: 0; padding: 18px 16px; }
+  .mode-compare, .report-grid { flex-direction: column; }
+  .actions-cell { white-space: normal; }
+  .actions-cell .btn { margin-bottom: 4px; }
+}
+
+/* ---- Просмотр базы знаний ---- */
+.kb-summary { display: flex; gap: 10px; margin: 10px 0; }
+.kb-summary > div { flex: 1; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 4px; }
+.kb-summary b { font-size: 22px; color: var(--accent); line-height: 1; }
+.kb-summary span { font-size: 11.5px; color: var(--text-dim); }
+.kb-fams { display: flex; flex-wrap: wrap; gap: 6px; }
+.kb-fam { font-size: 11.5px; padding: 3px 10px; border-radius: 999px; background: rgba(var(--accent-rgb), .08); color: var(--text-dim); }
+.kb-fam b { color: var(--accent); }
+.kb-phr span { display: inline-block; font-size: 11px; padding: 1px 7px; margin: 2px 3px 2px 0; border-radius: 4px; background: var(--panel-2); border: 1px solid var(--line); }
+@media (max-width: 860px) { .kb-summary { flex-direction: column; } }

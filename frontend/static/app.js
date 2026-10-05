@@ -242,10 +242,11 @@ function toast(message, type = "ok") {
   setTimeout(() => el.remove(), 4500);
 }
 
-function openModal(title, bodyHtml) {
+function openModal(title, bodyHtml, wide) {
+  // wide — для окон с широкими таблицами (разбор документа)
   document.getElementById("modal-root").innerHTML = `
     <div class="modal-backdrop" id="modal-backdrop">
-      <div class="modal">
+      <div class="modal${wide ? " modal-wide" : ""}">
         <button type="button" class="modal-close" id="modal-close-btn" title="${t("Закрыть")}" aria-label="${t("Закрыть")}">✕</button>
         <h2>${escapeHtml(title)}</h2>
         ${bodyHtml}
@@ -273,13 +274,15 @@ function formActions(saveLabel = t("Сохранить")) {
     </div>`;
 }
 
-function bindForm(handler, addAnother) {
+function bindForm(handler, addAnother, keepOpen) {
+  // keepOpen — для многошаговых форм (загрузка документа): обработчик сам
+  // открывает следующее окно, и закрывать его после возврата нельзя.
   document.getElementById("mf").addEventListener("submit", async (e) => {
     e.preventDefault();
     try {
       await handler();
-      closeModal();
-      if (addAnother) confirmAddAnother(addAnother);
+      if (!keepOpen) closeModal();
+      if (addAnother && localStorage.getItem("cpb-no-add-another") !== "1") confirmAddAnother(addAnother);
     } catch (err) {
       toast(err.message, "error");
     }
@@ -300,14 +303,21 @@ function confirmAddAnother(opts) {
     <div class="confirm-more-body">
       <p>${question}</p>
     </div>
+    <label class="row-check" style="margin-top:4px;">
+      <input type="checkbox" id="no-add-another"> ${t("Больше не спрашивать")}
+    </label>
     <div class="modal-actions">
-      <button type="button" class="btn" onclick="closeModal()">${t("Нет")}</button>
+      <button type="button" class="btn" onclick="rememberAddAnother(); closeModal()">${t("Нет")}</button>
       <button type="button" class="btn btn-primary" id="confirm-more-yes">${t("Да, добавить ещё")}</button>
     </div>`);
   document.getElementById("confirm-more-yes").addEventListener("click", () => {
+    rememberAddAnother();
     closeModal();
     opts.reopen();
   });
+}
+function rememberAddAnother() {
+  if (checked("no-add-another")) localStorage.setItem("cpb-no-add-another", "1");
 }
 
 function val(id) { const el = document.getElementById(id); return el ? el.value.trim() : ""; }
@@ -319,6 +329,8 @@ async function init() {
   initTheme();
   document.getElementById("btn-new-project").addEventListener("click", openNewProjectModal);
   document.getElementById("import-file").addEventListener("change", onImportFileChosen);
+  document.getElementById("doc-file").addEventListener("change", onDocumentFileChosen);
+  document.getElementById("btn-help").addEventListener("click", openOnboarding);
   document.getElementById("btn-theme-toggle").addEventListener("click", toggleTheme);
   document.getElementById("btn-lang-toggle").addEventListener("click", toggleLang);
   applyLang(getLang());
@@ -332,6 +344,8 @@ async function init() {
   }
   await loadProjects();
   renderView();
+  // Экран быстрого старта — только при первом запуске
+  if (!localStorage.getItem("cpb-onboarded")) openOnboarding();
 }
 
 /* ===================== Тема (светлая/тёмная) ===================== */
@@ -384,6 +398,10 @@ function applyLang(lang) {
   }
   const importLabel = document.querySelector(".import-label");
   if (importLabel) importLabel.textContent = t("Импорт ZIP…");
+  const docLabel = document.querySelector('label[for="doc-file"]');
+  if (docLabel) docLabel.textContent = t("Загрузить документ…");
+  const helpBtn = document.getElementById("btn-help");
+  if (helpBtn) helpBtn.textContent = t("Справка и настройки");
   const newProjBtn = document.getElementById("btn-new-project");
   if (newProjBtn) newProjBtn.title = t("Новый проект");
 }
@@ -576,22 +594,29 @@ function depWarningHtml(textRu, textEn, stepKey) {
     </div>`;
 }
 
+/* Признак «подсказка просмотрена» общий для всех проектов. Раньше он
+   хранился отдельно для каждого проекта, и в новом проекте все подсказки
+   всплывали заново — пользователи воспринимали это как навязчивость. */
 function hintSeenKey(stepKey) {
-  return `cpb-hint-seen-${state.currentProjectId}-${stepKey}`;
+  return `cpb-hint-seen-${stepKey}`;
 }
+/* Глобальный выключатель всплывающих подсказок (выбирается на экране
+   первого запуска и в «Справке»). Баннер с подсказкой на шаге остаётся
+   всегда — он не мешает работе. */
+function hintsDisabled() { return localStorage.getItem("cpb-hints-off") === "1"; }
 
 /* Всплывающая подсказка при первом посещении шага. Показывается один раз
    на проект и шаг (галочкой можно отключить); дальше подсказка остаётся
    доступна баннером и кнопкой «?» на самой странице. */
 function maybeShowStepHintModal() {
   const step = currentStep();
-  if (localStorage.getItem(hintSeenKey(step.key))) return;
+  if (hintsDisabled() || localStorage.getItem(hintSeenKey(step.key))) return;
   openModal(`${state.wizardStep + 1}. ${stepTitle(step)}`, `
     <div class="modal-hint-body">
       <p>${escapeHtml(stepHint(step))}</p>
     </div>
     <label class="row-check" style="margin-top:6px;">
-      <input type="checkbox" id="hint-dont-show"> ${t("Больше не показывать эту подсказку")}
+      <input type="checkbox" id="hint-dont-show" checked> ${t("Больше не показывать эту подсказку")}
     </label>
     <div class="modal-actions">
       <button type="button" class="btn btn-primary" onclick="dismissStepHint('${step.key}')">${t("Понятно")}</button>
@@ -622,12 +647,15 @@ function wizardHintBannerHtml(step) {
     <div class="wizard-hint-banner">
       <span class="icon">💡</span>
       <div><div>${escapeHtml(stepHint(step))}</div></div>
-      <button class="btn btn-sm" onclick="maybeForceShowHint()" title="${t("Показать подсказку")}">?</button>
+      <button class="btn btn-sm hint-reopen" onclick="maybeForceShowHint()" title="${t("Показать подсказку")}"><span class="hint-reopen-icon">?</span> ${t("Подсказка")}</button>
     </div>`;
 }
 function maybeForceShowHint() {
   localStorage.removeItem(hintSeenKey(currentStep().key));
+  const off = hintsDisabled();
+  if (off) localStorage.removeItem("cpb-hints-off");
   maybeShowStepHintModal();
+  if (off) localStorage.setItem("cpb-hints-off", "1");
 }
 
 /* Небольшая иконка-подсказка (всплывающий popover) рядом со сложными полями. */
@@ -1107,10 +1135,25 @@ function renderOval(container) {
   }
 }
 
+/* Имя OVAL-файла по требованию формата архива оканчивается на -oval.xml.
+   Пользователю не нужно помнить это правило: «checks», «checks.xml» и
+   «checks-oval.xml» дают одно и то же имя. */
+function normalizeOvalName(name) {
+  let n = (name || "").trim().replace(/\s+/g, "-");
+  if (!n) return "checks-oval.xml";
+  n = n.replace(/\.xml$/i, "").replace(/-oval$/i, "");
+  return n + "-oval.xml";
+}
+function previewOvalName() {
+  const el = document.getElementById("of-final");
+  if (el) el.textContent = normalizeOvalName(val("of-filename"));
+}
+
 function openAddOvalFileModal() {
   openModal(t("Новый OVAL-файл"), `
     <form id="mf">
-      <div class="field"><label>${L('filename', {required:true})}</label><input class="mono-input" id="of-filename" required placeholder="checks-1-oval.xml"></div>
+      <div class="field"><label>${L('filename', {required:true})}</label><input class="mono-input" id="of-filename" required value="checks" oninput="previewOvalName()">
+        <span class="hint">${t("Итоговое имя файла")}: <code id="of-final">checks-oval.xml</code> — ${t("окончание -oval.xml добавляется автоматически.")}</span></div>
       <div class="grid">
         <div class="field"><label>${L('product_name')}</label><input id="of-product" value="Custom"></div>
         <div class="field"><label>${L('product_version')}</label><input id="of-version" value="1.0"></div>
@@ -1119,7 +1162,7 @@ function openAddOvalFileModal() {
       ${formActions(t("Создать"))}
     </form>`);
   bindForm(async () => {
-    const fname = val("of-filename");
+    const fname = normalizeOvalName(val("of-filename"));
     await api.post(`/projects/${encodeURIComponent(state.currentProjectId)}/oval-files`, {
       filename: fname, product_name: val("of-product"), product_version: val("of-version"), schema_version: val("of-schema"),
     });
@@ -1262,7 +1305,8 @@ function renderVariables(container, d) {
       <td>${escapeHtml(v.datatype)}</td>
       <td class="id-cell">${escapeHtml(v.value)}</td>
       <td>${escapeHtml(v.comment || "")}</td>
-      <td class="actions-cell"><button class="btn btn-sm btn-danger" onclick="deleteVariable('${escapeHtml(v.id)}')">${t("Удалить")}</button></td>
+      <td class="actions-cell"><button class="btn btn-sm" onclick="openEditVariableModal('${escapeHtml(v.id)}')">${t("Изменить")}</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteVariable('${escapeHtml(v.id)}')">${t("Удалить")}</button></td>
     </tr>`).join("");
   container.innerHTML = `
     <div class="toolbar"><button class="btn btn-primary" onclick="openAddVariableModal()">${t("+ Переменная")}</button></div>
@@ -1304,18 +1348,21 @@ async function deleteVariable(id) {
 
 /* ---------- Объекты / состояния: генерируемые по схеме формы ---------- */
 
-function fieldPlainInputHtml(f, prefix) {
+function fieldPlainInputHtml(f, prefix, value) {
+  value = value == null ? "" : String(value);
   if (f.options && f.options.length) {
-    return `<select id="${prefix}_${f.name}"><option value="">—</option>${optionsHtml(f.options)}</select>`;
+    return `<select id="${prefix}_${f.name}"><option value="">—</option>${optionsHtml(f.options, value)}</select>`;
   }
-  return `<input class="mono-input" id="${prefix}_${f.name}" placeholder="${escapeHtml(f.name)}">`;
+  return `<input class="mono-input" id="${prefix}_${f.name}" placeholder="${escapeHtml(f.name)}" value="${escapeHtml(value)}">`;
 }
 
-function objectFieldsEditorHtml(fields_config) {
+function objectFieldsEditorHtml(fields_config, values) {
+  // values — текущие значения полей при изменении существующего объекта
+  values = values || {};
   return fields_config.map(f => `
     <div class="field">
       <label>${L2(f.label, f.label_en, {required: f.required, tech: f.name})}</label>
-      ${fieldPlainInputHtml(f, "objf")}
+      ${fieldPlainInputHtml(f, "objf", values[f.name])}
     </div>`).join("") || `<div class="muted">${t("У этого типа проверки нет полей объекта — объект описывает всю политику целиком.")}</div>`;
 }
 function collectObjectFields(fields_config) {
@@ -1327,29 +1374,38 @@ function collectObjectFields(fields_config) {
   return out;
 }
 
-function stateFieldsEditorHtml(fields_config, variables) {
-  const varOptions = variables.map(v => `<option value="${escapeHtml(v.id)}">${escapeHtml(v.id)} (= ${escapeHtml(v.value)})</option>`).join("");
-  return fields_config.map(f => `
+function stateFieldsEditorHtml(fields_config, variables, values) {
+  // values — текущие значения полей при изменении существующего состояния:
+  // либо {value, operation, datatype}, либо {var_ref, operation, datatype}
+  values = values || {};
+  return fields_config.map(f => {
+    const cur = values[f.name] || {};
+    const isVar = !!cur.var_ref;
+    const curVal = cur.value == null ? "" : String(cur.value);
+    const varOptions = variables.map(v =>
+      `<option value="${escapeHtml(v.id)}" ${v.id === cur.var_ref ? "selected" : ""}>${escapeHtml(v.id)} (= ${escapeHtml(v.value)})</option>`).join("");
+    return `
     <div class="panel" style="padding:12px;margin-bottom:10px;">
       <div class="row" style="justify-content:space-between;margin-bottom:8px;">
         <label style="font-weight:600;">${L2(f.label, f.label_en, {tech: f.name})}</label>
-        ${f.allow_var_ref && variables.length ? `<label class="row-check"><input type="checkbox" id="stemode_${f.name}" onchange="toggleVarRefMode('${f.name}')"> ${t("Из переменной")}</label>` : ""}
+        ${f.allow_var_ref && variables.length ? `<label class="row-check"><input type="checkbox" id="stemode_${f.name}" ${isVar ? "checked" : ""} onchange="toggleVarRefMode('${f.name}')"> ${t("Из переменной")}</label>` : ""}
       </div>
       <div class="field-value-row">
-        <span id="stevalwrap_${f.name}" style="flex:1;display:flex;">
-          <input class="mono-input" id="stef_${f.name}_value" placeholder="${t("Значение")}" style="flex:1;">
+        <span id="stevalwrap_${f.name}" style="flex:1;display:${isVar ? "none" : "flex"};">
+          <input class="mono-input" id="stef_${f.name}_value" placeholder="${t("Значение")}" style="flex:1;" value="${escapeHtml(curVal)}">
         </span>
         ${f.allow_var_ref ? `
-        <span id="stevarwrap_${f.name}" class="var-ref-mode" style="flex:1;display:none;">
+        <span id="stevarwrap_${f.name}" class="var-ref-mode" style="flex:1;display:${isVar ? "flex" : "none"};">
           <select id="stef_${f.name}_varref" style="flex:1;"><option value="">${t("— Переменная —")}</option>${varOptions}</select>
         </span>` : ""}
         <!-- Операция и тип данных доступны и при выборе переменной: в
              эталонном комплекте сущность с var_ref содержит все три
              атрибута (datatype, operation, var_ref). -->
-        <select id="stef_${f.name}_operation" title="${t("Операция сравнения")}">${optionsHtml(OPERATIONS, f.default_operation, state.labels.operation, state.labelsEn.operation)}</select>
-        <select id="stef_${f.name}_datatype" title="${t("Тип данных")}">${optionsHtml(DATATYPES, f.datatype, state.labels.datatype, state.labelsEn.datatype)}</select>
+        <select id="stef_${f.name}_operation" title="${t("Операция сравнения")}">${optionsHtml(OPERATIONS, cur.operation || f.default_operation, state.labels.operation, state.labelsEn.operation)}</select>
+        <select id="stef_${f.name}_datatype" title="${t("Тип данных")}">${optionsHtml(DATATYPES, cur.datatype || f.datatype, state.labels.datatype, state.labelsEn.datatype)}</select>
       </div>
-    </div>`).join("") || `<div class="muted">${t("У этого типа проверки нет полей состояния.")}</div>`;
+    </div>`;
+  }).join("") || `<div class="muted">${t("У этого типа проверки нет полей состояния.")}</div>`;
 }
 function toggleVarRefMode(name) {
   // Переключается только источник значения (поле ввода ↔ список переменных);
@@ -1393,7 +1449,8 @@ function renderObjects(container, d) {
       <td>${typeBadgeHtml(o.type)}</td>
       <td class="id-cell">${fieldsSummary(o.fields)}</td>
       <td>${escapeHtml(o.comment || "")}</td>
-      <td class="actions-cell"><button class="btn btn-sm btn-danger" onclick="deleteObject('${escapeHtml(o.id)}')">${t("Удалить")}</button></td>
+      <td class="actions-cell"><button class="btn btn-sm" onclick="openEditObjectModal('${escapeHtml(o.id)}')">${t("Изменить")}</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteObject('${escapeHtml(o.id)}')">${t("Удалить")}</button></td>
     </tr>`).join("");
   container.innerHTML = `
     <div class="toolbar"><button class="btn btn-primary" onclick="openAddObjectModal()">${t("+ Объект")}</button></div>
@@ -1452,7 +1509,8 @@ function renderStates(container, d) {
       <td>${typeBadgeHtml(s.type)}</td>
       <td class="id-cell">${fieldsSummary(s.fields)}</td>
       <td>${escapeHtml(s.comment || "")}</td>
-      <td class="actions-cell"><button class="btn btn-sm btn-danger" onclick="deleteState('${escapeHtml(s.id)}')">${t("Удалить")}</button></td>
+      <td class="actions-cell"><button class="btn btn-sm" onclick="openEditStateModal('${escapeHtml(s.id)}')">${t("Изменить")}</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteState('${escapeHtml(s.id)}')">${t("Удалить")}</button></td>
     </tr>`).join("");
   container.innerHTML = `
     <div class="toolbar"><button class="btn btn-primary" onclick="openAddStateModal()">${t("+ Состояние")}</button></div>
@@ -1523,7 +1581,8 @@ function renderTests(container, d) {
       <td>${typeBadgeHtml(tt.type)}</td>
       <td class="id-cell">${escapeHtml(tt.object_ref ? refLabel(byId[tt.object_ref] || { id: tt.object_ref }) : "—")}</td>
       <td class="id-cell">${escapeHtml(tt.state_ref ? refLabel(byId[tt.state_ref] || { id: tt.state_ref }) : "—")}</td>
-      <td class="actions-cell"><button class="btn btn-sm btn-danger" onclick="deleteTest('${escapeHtml(tt.id)}')">${t("Удалить")}</button></td>
+      <td class="actions-cell"><button class="btn btn-sm" onclick="openEditTestModal('${escapeHtml(tt.id)}')">${t("Изменить")}</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteTest('${escapeHtml(tt.id)}')">${t("Удалить")}</button></td>
     </tr>`).join("");
   container.innerHTML = `
     <div class="toolbar"><button class="btn btn-primary" onclick="openAddTestModal()">${t("+ Тест")}</button></div>
@@ -1827,6 +1886,401 @@ function onImportFileChosen(e) {
   });
 }
 
+
+
+/* ============ Нормативный документ → черновик профиля ============
+   Документ разбирается на сервере: выделяются пронумерованные пункты,
+   по базе знаний определяется тема каждого требования и подбираются
+   проверки из каталога. Результат — ЧЕРНОВИК: он открывается в
+   конструкторе и правится обычным образом. */
+
+let pendingDocFile = null;
+let pendingDocAnalysis = null;
+
+function onDocumentFileChosen(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  pendingDocFile = file;
+  pendingDocAnalysis = null;
+  openDocumentSetupModal();
+}
+
+function openDocumentSetupModal() {
+  const file = pendingDocFile;
+  const guess = (file.name || "document").replace(/\.[^.]+$/, "")
+    .replace(/[^A-Za-z0-9_-]+/g, "_").toLowerCase().slice(0, 40) || "document";
+  openModal(t("Загрузка нормативного документа"), `
+    <form id="mf">
+      <div class="field"><label>${L('file')}</label><input value="${escapeHtml(file.name)}" disabled></div>
+      <div class="field"><label>${t("Название документа")}</label>
+        <input id="doc-title" value="${escapeHtml(file.name.replace(/\.[^.]+$/, ""))}">
+        <span class="hint">${t("Попадёт в идентификатор требования каждого правила вместе с номером пункта.")}</span>
+      </div>
+      <div class="grid">
+        <div class="field"><label>${t("Операционная система")}</label>
+          <input id="doc-os" list="doc-os-list" placeholder="Astra Linux">
+          <datalist id="doc-os-list">
+            ${["Astra Linux", "РЕД ОС", "ALT Linux", "Debian", "Ubuntu", "SberLinux"]
+              .map(o => `<option value="${o}">`).join("")}
+          </datalist>
+        </div>
+        <div class="field"><label>${L('project_id_new', {required:true})}</label>
+          <input class="mono-input" id="doc-project-id" required value="${escapeHtml("draft_" + guess)}">
+        </div>
+      </div>
+      <div class="dep-warning" style="margin-top:4px;">
+        <span class="icon">i</span>
+        <div>${t("Поддерживаются DOCX, ODT и TXT. PDF не используется: в нём текст хранится как набор глифов, и кириллица часто извлекается искажённой.")}</div>
+      </div>
+      ${formActions(t("Разобрать документ"))}
+    </form>`);
+  bindForm(async () => {
+    const params = {
+      filename: pendingDocFile.name,
+      os: val("doc-os") || null,
+    };
+    pendingDocAnalysis = await api.uploadDocument("/documents/analyze", pendingDocFile, params);
+    pendingDocAnalysis.title = val("doc-title") || pendingDocFile.name;
+    pendingDocAnalysis.projectId = val("doc-project-id");
+    pendingDocAnalysis.osName = val("doc-os") || null;
+    openDocumentReviewModal();
+  }, null, true);
+}
+
+/* Разбор показывается ДО создания проекта: видно, какие пункты распознаны,
+   какая тема определена и какая проверка предложена. */
+function openDocumentReviewModal() {
+  const a = pendingDocAnalysis;
+  const rows = a.matches.map(m => {
+    const best = m.candidates && m.candidates[0];
+    const concept = m.concepts && m.concepts[0];
+    const cls = m.confidence === "высокая" ? "ok" : m.confidence === "средняя" ? "mid" : "low";
+    return `
+      <tr>
+        <td class="id-cell">${escapeHtml(m.number)}</td>
+        <td>${escapeHtml((m.text || "").slice(0, 110))}…</td>
+        <td>${concept ? escapeHtml(concept.title) : `<span class="muted">—</span>`}</td>
+        <td>${best ? escapeHtml(best.title || best.entry_id) : `<span class="muted">${t("нет проверки")}</span>`}</td>
+        <td><span class="conf conf-${cls}">${escapeHtml(m.confidence)}</span></td>
+      </tr>`;
+  }).join("");
+
+  const counts = a.matches.reduce((acc, m) => {
+    acc[m.confidence] = (acc[m.confidence] || 0) + 1; return acc;
+  }, {});
+
+  openModal(`${t("Разбор документа")}: ${a.filename}`, `
+    <form id="mf">
+      <p class="muted" style="margin-bottom:10px;">
+        ${t("Пунктов найдено")}: <b>${a.items_total}</b> ·
+        ${t("высокая")}: ${counts["высокая"] || 0} ·
+        ${t("средняя")}: ${counts["средняя"] || 0} ·
+        ${t("низкая")}: ${counts["низкая"] || 0} ·
+        ${t("нет")}: ${counts["нет"] || 0}
+      </p>
+      <div class="doc-review">
+        <table>
+          <thead><tr>
+            <th>${t("Пункт")}</th><th>${t("Текст")}</th>
+            <th>${t("Тема требования")}</th><th>${t("Предложенная проверка")}</th>
+            <th>${t("Уверенность")}</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <div class="field" style="margin-top:12px;">
+        <label>${t("Включать в черновик пункты с уверенностью")}</label>
+        <select id="doc-minconf">
+          <option value="высокая">${t("только высокая")}</option>
+          <option value="средняя" selected>${t("высокая и средняя")}</option>
+          <option value="низкая">${t("любая, включая низкую")}</option>
+        </select>
+        <span class="hint">${t("Пункты ниже выбранного уровня в черновик не попадут — их видно в отчёте как несопоставленные.")}</span>
+      </div>
+      <div class="dep-warning" style="margin-top:4px;">
+        <span class="icon">!</span>
+        <div>${escapeHtml(a.disclaimer)}</div>
+      </div>
+      ${formActions(t("Создать черновик профиля"))}
+    </form>`, true);
+  bindForm(async () => {
+    const report = await api.uploadDocument("/documents/draft", pendingDocFile, {
+      project_id: a.projectId,
+      filename: a.filename,
+      os: a.osName,
+      title: a.title,
+      min_confidence: val("doc-minconf"),
+    });
+    document.getElementById("doc-file").value = "";
+    await loadProjects();
+    await selectProject(a.projectId);
+    openDocumentReportModal(report);
+  }, null, true);
+}
+
+/* Итог сборки: что создано, что требует организационных мер, что осталось
+   без сопоставления. Отчёт полезен и сам по себе — как оценка покрытия. */
+function openDocumentReportModal(rep) {
+  const s = rep.summary;
+  const list = (arr, empty, fmt) => arr.length
+    ? `<ul class="report-list">${arr.map(fmt).join("")}</ul>`
+    : `<p class="muted">${escapeHtml(empty)}</p>`;
+  openModal(t("Черновик профиля создан"), `
+    <div class="report-grid">
+      <div><b>${s.items_total}</b><span>${t("пунктов в документе")}</span></div>
+      <div><b>${s.rules_created}</b><span>${t("создано правил")}</span></div>
+      <div><b>${s.items_manual}</b><span>${t("организационных мер")}</span></div>
+      <div><b>${s.items_unmatched}</b><span>${t("без сопоставления")}</span></div>
+    </div>
+    <div class="dep-warning" style="margin-top:12px;">
+      <span class="icon">!</span><div>${escapeHtml(rep.disclaimer)}</div>
+    </div>
+    <h3 style="margin-top:14px;">${t("Требуют организационных мер")}</h3>
+    ${list(rep.manual, t("Таких пунктов нет."), m =>
+      `<li><span class="id-cell">${escapeHtml(m.number)}</span> ${escapeHtml(m.title || "")}
+       <div class="muted">${escapeHtml(m.reason || "")}</div></li>`)}
+    <h3 style="margin-top:14px;">${t("Без сопоставления")}</h3>
+    ${list(rep.skipped, t("Все пункты сопоставлены."), m =>
+      `<li><span class="id-cell">${escapeHtml(m.number)}</span>
+       <span class="muted">${escapeHtml((m.text || "").slice(0, 120))}</span></li>`)}
+    <div class="modal-actions">
+      <button type="button" class="btn btn-primary" onclick="closeModal()">${t("Перейти к правке")}</button>
+    </div>`, true);
+}
+
+
+
+/* ===================== Быстрый старт =====================
+   Открывается при первом запуске и по ссылке «Справка» в боковой панели.
+   Отвечает на вопросы, которые чаще всего возникали у первых
+   пользователей: с чего начать, чем мастер отличается от конструктора и
+   как отключить всплывающие подсказки. */
+
+function openOnboarding() {
+  const hintsOn = !hintsDisabled();
+  const askMore = localStorage.getItem("cpb-no-add-another") !== "1";
+  openModal(t("Быстрый старт"), `
+    <div class="onboarding">
+      <p>${t("Сервис собирает профиль соответствия — пару файлов XCCDF и OVAL — и выгружает его ZIP-архивом для импорта в Kaspersky Vulnerability Management.")}</p>
+
+      <h3>${t("С чего начать")}</h3>
+      <ol>
+        <li>${t("Откройте пример — он покажет, как выглядит готовый профиль.")}</li>
+        <li>${t("Создайте проект кнопкой «+» или загрузите нормативный документ — сервис соберёт черновик.")}</li>
+        <li>${t("Пройдите шаги мастера и на последнем шаге выгрузите архив.")}</li>
+      </ol>
+
+      <h3>${t("Мастер или конструктор")}</h3>
+      <div class="mode-compare">
+        <div><b>${t("Мастер")}</b><span>${t("Ведёт по шагам в нужном порядке и подсказывает на каждом. Для первого профиля и для тех, кто не помнит устройство XCCDF и OVAL.")}</span></div>
+        <div><b>${t("Конструктор")}</b><span>${t("Все разделы сразу, в любом порядке. Для правки готового или импортированного профиля.")}</span></div>
+      </div>
+      <p class="muted">${t("Данные у режимов общие: переключаться можно в любой момент, ничего не теряется.")}</p>
+
+      <h3>${t("Настройки")}</h3>
+      <label class="row-check"><input type="checkbox" id="ob-hints" ${hintsOn ? "checked" : ""}> ${t("Показывать подсказку при первом открытии каждого шага")}</label>
+      <label class="row-check"><input type="checkbox" id="ob-more" ${askMore ? "checked" : ""}> ${t("Предлагать добавить ещё один элемент после создания")}</label>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn" onclick="openKnowledgeBase()" style="margin-right:auto;">${t("База знаний")}</button>
+      <button type="button" class="btn" onclick="finishOnboarding(false)">${t("Начать")}</button>
+      <button type="button" class="btn btn-primary" onclick="finishOnboarding(true)">${t("Открыть пример")}</button>
+    </div>`, true);
+}
+
+async function finishOnboarding(openExample) {
+  if (checked("ob-hints")) localStorage.removeItem("cpb-hints-off");
+  else localStorage.setItem("cpb-hints-off", "1");
+  if (checked("ob-more")) localStorage.removeItem("cpb-no-add-another");
+  else localStorage.setItem("cpb-no-add-another", "1");
+  localStorage.setItem("cpb-onboarded", "1");
+  closeModal();
+  if (openExample) {
+    const ex = (state.projects || []).find(p => p.startsWith("example_astra")) ||
+               (state.projects || []).find(p => p.startsWith("example_"));
+    if (ex) await selectProject(ex);
+  }
+}
+
+
+
+/* ===================== База знаний =====================
+   Показывает, на чём строится черновик профиля по документу: какие темы
+   требований сервис узнаёт, по каким формулировкам, в каких документах эти
+   темы встречаются и какие проверки их закрывают. Только просмотр —
+   пополнение базы выполняется правкой файлов backend/knowledge/*.json. */
+
+let kbData = null;
+
+async function openKnowledgeBase() {
+  if (!kbData) kbData = await api.get("/knowledge");
+  renderKnowledgeBase("");
+}
+
+function renderKnowledgeBase(filter) {
+  const f = (filter || "").toLowerCase();
+  const concepts = kbData.concepts.filter(c => !f ||
+    c.title.toLowerCase().includes(f) ||
+    (c.ru || []).concat(c.en || []).some(x => x.toLowerCase().includes(f)) ||
+    (c.themes || []).some(x => x.toLowerCase().includes(f)));
+  const fam = Object.entries(kbData.families)
+    .map(([k, v]) => `<span class="kb-fam">${escapeHtml(k)} <b>${v}</b></span>`).join("");
+  const rows = concepts.map(c => `
+    <tr>
+      <td><b>${escapeHtml(c.title)}</b><div class="muted">${escapeHtml((c.themes || []).join(", "))}</div></td>
+      <td class="kb-phr">${(c.ru || []).map(x => `<span>${escapeHtml(x)}</span>`).join("")}</td>
+      <td class="kb-phr">${(c.en || []).map(x => `<span>${escapeHtml(x)}</span>`).join("")}</td>
+      <td>${(c.doc_hints || []).map(h =>
+        `<div>${escapeHtml(h.family)}: <span class="id-cell">${escapeHtml(h.ref)}</span>${h.verify ? ` <span class="muted" title="${t("Номер требует сверки с вашей редакцией документа")}">*</span>` : ""}</div>`).join("")}</td>
+      <td>${c.checks.length ? c.checks.length : `<span class="muted">${t("нет")}</span>`}</td>
+    </tr>`).join("");
+  openModal(t("База знаний"), `
+    <p class="muted">${t("Темы требований, по которым сервис распознаёт пункты нормативных документов, и формулировки, по которым он их узнаёт.")}</p>
+    <div class="kb-summary">
+      <div><b>${kbData.concepts.length}</b><span>${t("тем требований")}</span></div>
+      <div><b>${kbData.concepts.reduce((n, c) => n + (c.ru || []).length + (c.en || []).length, 0)}</b><span>${t("формулировок RU и EN")}</span></div>
+      <div><b>${kbData.synonyms.length}</b><span>${t("пар синонимов")}</span></div>
+    </div>
+    <div class="kb-fams">${fam}</div>
+    <input id="kb-filter" placeholder="${t("Поиск по темам и формулировкам")}" value="${escapeHtml(filter || "")}" style="width:100%;margin:10px 0;">
+    <div class="doc-review">
+      <table>
+        <thead><tr><th>${t("Тема")}</th><th>${t("Формулировки RU")}</th><th>${t("Формулировки EN")}</th><th>${t("Где встречается")}</th><th>${t("Проверок")}</th></tr></thead>
+        <tbody>${rows || `<tr><td colspan="5" class="muted">${t("Ничего не найдено.")}</td></tr>`}</tbody>
+      </table>
+    </div>
+    <p class="muted" style="margin-top:8px;">* ${t("Номер пункта зарубежного стандарта — ориентир: нумерация меняется между редакциями, сверьте со своей копией документа.")}</p>
+    <div class="modal-actions">
+      <button type="button" class="btn" onclick="openOnboarding()">${t("Назад")}</button>
+      <button type="button" class="btn btn-primary" onclick="closeModal()">${t("Закрыть")}</button>
+    </div>`, true);
+  const inp = document.getElementById("kb-filter");
+  inp.addEventListener("input", () => {
+    const v = inp.value, pos = inp.selectionStart;
+    renderKnowledgeBase(v);
+    const ni = document.getElementById("kb-filter");
+    ni.focus(); ni.setSelectionRange(pos, pos);
+  });
+}
+
 /* ===================== Старт ===================== */
 
 init();
+
+
+/* ===================== Изменение элементов OVAL-файла =====================
+   Формы повторяют формы создания, но открываются заполненными и
+   отправляют PUT. Идентификатор и тип проверки менять нельзя: на них
+   держатся ссылки из тестов и определений — чтобы сменить тип, элемент
+   создаётся заново. */
+
+function openEditVariableModal(id) {
+  const v = state.currentOvalData.variables.find(x => x.id === id);
+  if (!v) return;
+  openModal(`${t("Переменная")}: ${id}`, `
+    <form id="mf">
+      <div class="grid">
+        <div class="field"><label>${L('version')}</label><input id="v-version" value="${escapeHtml(v.version || "1")}"></div>
+        <div class="field"><label>${L('datatype')}</label><select id="v-datatype">${optionsHtml(DATATYPES, v.datatype, state.labels.datatype, state.labelsEn.datatype)}</select></div>
+        <div class="field full"><label>${L('value', {required:true})}</label><input class="mono-input" id="v-value" required value="${escapeHtml(v.value || "")}"></div>
+        <div class="field full"><label>${L('comment')}</label><input id="v-comment" value="${escapeHtml(v.comment || "")}"></div>
+      </div>
+      ${formActions(t("Сохранить"))}
+    </form>`);
+  bindForm(async () => {
+    await api.put(`${ovalBase()}/variables/${encodeURIComponent(id)}`, {
+      id: id, version: val("v-version") || "1", datatype: val("v-datatype"),
+      value: val("v-value"), comment: val("v-comment") || null,
+    });
+    await loadOvalFileData(); renderView(); toast(t("Сохранено"), "ok");
+  });
+}
+
+function openEditObjectModal(id) {
+  const o = state.currentOvalData.objects.find(x => x.id === id);
+  if (!o) return;
+  const cfg = state.ovalSchema.types[o.type];
+  openModal(`${t("Объект")}: ${id}`, `
+    <form id="mf">
+      <div class="field"><label>${L('test_type')}</label>
+        <input class="mono-input" value="${escapeHtml(typeLabel(cfg, o.type))}" disabled>
+        <span class="hint">${t("Тип проверки не меняется: на объект ссылаются тесты. Чтобы сменить тип, создайте объект заново.")}</span>
+      </div>
+      <div class="grid">
+        <div class="field"><label>${L('version')}</label><input id="o-version" value="${escapeHtml(o.version || "1")}"></div>
+        <div class="field"><label>${L('comment')}</label><input id="o-comment" value="${escapeHtml(o.comment || "")}"></div>
+      </div>
+      <div id="o-fields">${objectFieldsEditorHtml(cfg.object_fields, o.fields)}</div>
+      ${formActions(t("Сохранить"))}
+    </form>`);
+  bindForm(async () => {
+    await api.put(`${ovalBase()}/objects/${encodeURIComponent(id)}`, {
+      test_type: o.type, id: id, version: val("o-version") || "1",
+      fields: collectObjectFields(cfg.object_fields), comment: val("o-comment") || null,
+    });
+    await loadOvalFileData(); renderView(); toast(t("Сохранено"), "ok");
+  });
+}
+
+function openEditStateModal(id) {
+  const st = state.currentOvalData.states.find(x => x.id === id);
+  if (!st) return;
+  const cfg = state.ovalSchema.types[st.type];
+  openModal(`${t("Состояние")}: ${id}`, `
+    <form id="mf">
+      <div class="field"><label>${L('test_type')}</label>
+        <input class="mono-input" value="${escapeHtml(typeLabel(cfg, st.type))}" disabled>
+        <span class="hint">${t("Тип проверки не меняется: на состояние ссылаются тесты.")}</span>
+      </div>
+      <div class="grid">
+        <div class="field"><label>${L('version')}</label><input id="s-version" value="${escapeHtml(st.version || "1")}"></div>
+        <div class="field"><label>${L('comment')}</label><input id="s-comment" value="${escapeHtml(st.comment || "")}"></div>
+      </div>
+      <div id="s-fields">${stateFieldsEditorHtml(cfg.state_fields, state.currentOvalData.variables, st.fields)}</div>
+      ${formActions(t("Сохранить"))}
+    </form>`);
+  bindForm(async () => {
+    await api.put(`${ovalBase()}/states/${encodeURIComponent(id)}`, {
+      test_type: st.type, id: id, version: val("s-version") || "1",
+      fields: collectStateFields(cfg.state_fields), comment: val("s-comment") || null,
+    });
+    await loadOvalFileData(); renderView(); toast(t("Сохранено"), "ok");
+  });
+}
+
+function openEditTestModal(id) {
+  const d = state.currentOvalData;
+  const tst = d.tests.find(x => x.id === id);
+  if (!tst) return;
+  const cfg = state.ovalSchema.types[tst.type];
+  const objs = d.objects.filter(o => o.type === tst.type);
+  const stes = d.states.filter(x => x.type === tst.type);
+  openModal(`${t("Тест")}: ${id}`, `
+    <form id="mf">
+      <div class="field"><label>${L('test_type')}</label>
+        <input class="mono-input" value="${escapeHtml(typeLabel(cfg, tst.type))}" disabled>
+        <span class="hint">${t("Тип проверки не меняется: на тест ссылаются определения.")}</span>
+      </div>
+      <div class="grid">
+        <div class="field"><label>${L('version')}</label><input id="t-version" value="${escapeHtml(tst.version || "1")}"></div>
+        <div class="field"><label>${L('comment')}</label><input id="t-comment" value="${escapeHtml(tst.comment || "")}"></div>
+        <div class="field full"><label>${L('object_ref', {required:true})}</label>
+          <select id="t-objref" required>${refOptionsHtml(objs, tst.object_ref)}</select></div>
+        ${cfg && cfg.state_fields.length ? `
+        <div class="field full"><label>${L('state_ref')}</label>
+          <select id="t-steref"><option value="">— ${t("Без состояния")} —</option>${refOptionsHtml(stes, tst.state_ref)}</select></div>` : ""}
+        <div class="field"><label>${L('check')}</label><select id="t-check">${optionsHtml(CHECK_VALUES, tst.check || "all", state.labels.check, state.labelsEn.check)}</select></div>
+        <div class="field"><label>${L('check_existence')}</label><select id="t-checkexist">${optionsHtml(CHECK_EXISTENCE_VALUES, tst.check_existence || "at_least_one_exists", state.labels.check_existence, state.labelsEn.check_existence)}</select></div>
+      </div>
+      ${formActions(t("Сохранить"))}
+    </form>`);
+  bindForm(async () => {
+    await api.put(`${ovalBase()}/tests/${encodeURIComponent(id)}`, {
+      test_type: tst.type, id: id, version: val("t-version") || "1",
+      object_ref: val("t-objref"), state_ref: val("t-steref") || null,
+      check: val("t-check"), check_existence: val("t-checkexist"),
+      comment: val("t-comment") || null,
+    });
+    await loadOvalFileData(); renderView(); toast(t("Сохранено"), "ok");
+  });
+}

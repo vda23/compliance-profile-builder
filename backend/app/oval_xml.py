@@ -35,9 +35,21 @@ class OvalError(Exception):
     pass
 
 
+def normalize_oval_filename(filename):
+    """Приводит имя к требованию формата архива: окончание -oval.xml.
+    «checks», «checks.xml» и «checks-oval.xml» дают «checks-oval.xml»."""
+    import re as _re
+    n = _re.sub(r"\s+", "-", (filename or "").strip())
+    if not n:
+        return "checks-oval.xml"
+    n = _re.sub(r"\.xml$", "", n, flags=_re.I)
+    n = _re.sub(r"-oval$", "", n, flags=_re.I)
+    return n + "-oval.xml"
+
+
 def create_oval_file(project_id, filename, product_name, product_version, schema_version="5.11.2"):
-    if not filename.endswith(".xml"):
-        raise OvalError("Имя OVAL-файла должно иметь расширение .xml")
+    # То же правило, что в интерфейсе, — на случай обращения к API напрямую
+    filename = normalize_oval_filename(filename)
     path = storage.oval_file(project_id, filename)
     if path.exists():
         raise OvalError("Файл '{}' уже существует в проекте.".format(filename))
@@ -102,11 +114,21 @@ def _build_entity_container(local_tag, family, fields_config, values):
         )
     for field in fields_config:
         fname = field["name"]
-        if fname not in values or values[fname] in (None, ""):
-            continue
-        raw = values[fname]
+        raw = (values or {}).get(fname)
+        if raw in (None, ""):
+            # Поле не заполнено: если схема OVAL требует его (у реестра задано
+            # значение по умолчанию), выводим значение по умолчанию, иначе
+            # пропускаем. Без этого textfilecontent54_object выходил без
+            # обязательного instance и не проходил проверку схемы.
+            if field.get("default") is None:
+                continue
+            raw = field["default"]
         child = etree.SubElement(el, "{{{}}}{}".format(ns, fname))
         if field["is_plain_value"]:
+            # Обязательные атрибуты объектной сущности (например,
+            # operation="pattern match" у шаблона textfilecontent54).
+            for attr, aval in (field.get("attrs") or {}).items():
+                child.set(attr, aval)
             child.text = str(raw)
         else:
             operation = (raw.get("operation") if isinstance(raw, dict) else None) or field["default_operation"]
@@ -266,8 +288,10 @@ def add_test(project_id, filename, test_type, test_id, version, object_ref, stat
         t.set("check", check)
     if check_existence:
         t.set("check_existence", check_existence)
-    if comment:
-        t.set("comment", comment)
+    # comment у теста обязателен по схеме OVAL 5.11.2. Поле в форме
+    # необязательное, поэтому при пустом значении подставляется описание
+    # по типу проверки — иначе файл не проходит проверку схемы.
+    t.set("comment", comment or "Проверка: {} ({})".format(cfg.get("label", test_type), test_id))
 
     obj_el = etree.SubElement(t, "{{{}}}object".format(ns))
     obj_el.set("object_ref", object_ref)
@@ -386,8 +410,8 @@ def add_variable(project_id, filename, var_id, version, datatype, value, comment
     el.set("id", var_id)
     el.set("version", str(version))
     el.set("datatype", datatype)
-    if comment:
-        el.set("comment", comment)
+    # comment у переменной обязателен по схеме OVAL 5.11.2
+    el.set("comment", comment or "Эталонное значение {}".format(var_id))
     etree.SubElement(el, "{}value".format(O)).text = str(value)
 
     save_tree(project_id, filename, tree)
@@ -534,3 +558,96 @@ def serialize_for_export(project_id, filename):
     объявляет в корне только реально задействованные пространства имён
     семейств (ind/unix/linux/windows) — как в эталонном комплекте."""
     return serialize_xml(load_tree(project_id, filename))
+
+
+# ===================== Изменение элементов OVAL-файла =====================
+#
+# Объекты, состояния, тесты и переменные изначально можно было только
+# удалить и создать заново. При правке готового или импортированного
+# профиля это неудобно: удаление рвёт ссылки, и их приходится
+# восстанавливать вручную.
+#
+# Изменение выполняется как пересоздание элемента с тем же идентификатором
+# на прежнем месте в файле: ссылки из тестов и определений остаются
+# рабочими, порядок элементов не меняется.
+
+def _element_index(section, el_id):
+    """Позиция элемента с заданным идентификатором внутри секции."""
+    for i, child in enumerate(list(section)):
+        if child.get("id") == el_id:
+            return i
+    return None
+
+
+def _rebuild_in_place(project_id, filename, section_name, el_id, add_callable):
+    """Заменяет элемент, сохраняя его позицию в секции.
+
+    add_callable создаёт элемент заново (дописывает его в конец секции),
+    после чего элемент возвращается на исходное место."""
+    tree = load_tree(project_id, filename)
+    root = tree.getroot()
+    section = _section(root, section_name)
+    idx = _element_index(section, el_id)
+    if idx is None:
+        raise OvalError("Элемент '{}' не найден.".format(el_id))
+
+    import copy
+    original = copy.deepcopy(list(section)[idx])   # копия на случай отката
+
+    section.remove(list(section)[idx])
+    save_tree(project_id, filename, tree)
+
+    try:
+        add_callable()      # создаёт элемент заново, дописывая в конец
+    except Exception:
+        # Пересоздание не удалось — возвращаем прежний элемент на место.
+        # Без отката правка с ошибкой (например, неверное имя поля)
+        # уничтожила бы элемент и порвала ссылки на него.
+        tree = load_tree(project_id, filename)
+        root = tree.getroot()
+        section = _section(root, section_name)
+        section.insert(idx, original)
+        save_tree(project_id, filename, tree)
+        raise
+
+    tree = load_tree(project_id, filename)
+    root = tree.getroot()
+    section = _section(root, section_name)
+    new_idx = _element_index(section, el_id)
+    if new_idx is not None and new_idx != idx:
+        el = list(section)[new_idx]
+        section.remove(el)
+        section.insert(idx, el)
+        save_tree(project_id, filename, tree)
+    return get_oval_dict(project_id, filename)
+
+
+def update_object(project_id, filename, obj_id, test_type, version, fields, comment=None):
+    """Изменение объекта. Идентификатор не меняется — на него ссылаются тесты."""
+    return _rebuild_in_place(
+        project_id, filename, "objects", obj_id,
+        lambda: add_object(project_id, filename, test_type, obj_id, version, fields, comment))
+
+
+def update_state(project_id, filename, ste_id, test_type, version, fields, comment=None):
+    """Изменение состояния. Идентификатор не меняется."""
+    return _rebuild_in_place(
+        project_id, filename, "states", ste_id,
+        lambda: add_state(project_id, filename, test_type, ste_id, version, fields, comment))
+
+
+def update_test(project_id, filename, test_id, test_type, version, object_ref,
+                state_ref=None, check="all", check_existence="at_least_one_exists",
+                comment=None):
+    """Изменение теста. Идентификатор не меняется — на него ссылаются определения."""
+    return _rebuild_in_place(
+        project_id, filename, "tests", test_id,
+        lambda: add_test(project_id, filename, test_type, test_id, version, object_ref,
+                         state_ref, check, check_existence, comment))
+
+
+def update_variable(project_id, filename, var_id, version, datatype, value, comment=None):
+    """Изменение переменной. Идентификатор не меняется — на него ссылаются состояния."""
+    return _rebuild_in_place(
+        project_id, filename, "variables", var_id,
+        lambda: add_variable(project_id, filename, var_id, version, datatype, value, comment))

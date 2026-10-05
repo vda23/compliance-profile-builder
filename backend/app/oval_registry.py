@@ -16,7 +16,7 @@
 
 def entity(name, label, datatype="string", default_operation="equals",
            required=False, allow_var_ref=False, is_plain_value=False,
-           options=None):
+           options=None, attrs=None, default=None):
     """
     is_plain_value=True  -> объектная сущность без operation/datatype атрибутов,
                              просто <tag>value</tag> (типично для object).
@@ -24,6 +24,13 @@ def entity(name, label, datatype="string", default_operation="equals",
                              <tag datatype=".." operation="..">value</tag>
                              либо <tag var_ref=".."/> если allow_var_ref.
     options              -> список допустимых значений для select в UI (не обязателен).
+    attrs                -> атрибуты, которые всегда выводятся у объектной сущности.
+                            Пример: pattern у textfilecontent54 обязан нести
+                            operation="pattern match" — иначе действует equals,
+                            и регулярное выражение сравнивается как обычная строка.
+    default              -> значение, подставляемое, если поле не заполнено.
+                            Нужно для сущностей, обязательных по схеме OVAL,
+                            но не интересных пользователю (instance = 1).
     """
     return {
         "name": name,
@@ -34,6 +41,8 @@ def entity(name, label, datatype="string", default_operation="equals",
         "allow_var_ref": allow_var_ref,
         "is_plain_value": is_plain_value,
         "options": options or [],
+        "attrs": attrs or {},
+        "default": default,
     }
 
 
@@ -45,8 +54,12 @@ TEST_TYPES = {
         "object_fields": [
             entity("path", "Путь к каталогу", required=True, is_plain_value=True),
             entity("filename", "Имя файла", required=True, is_plain_value=True),
-            entity("pattern", "Регулярное выражение", required=True, is_plain_value=True),
-            entity("instance", "Instance (номер совпадения)", is_plain_value=True),
+            entity("pattern", "Регулярное выражение", required=True, is_plain_value=True,
+                   attrs={"operation": "pattern match"}),
+            # instance обязателен по схеме; «>= 1» означает «все совпадения»
+            entity("instance", "Номер совпадения", is_plain_value=True,
+                   attrs={"datatype": "int", "operation": "greater than or equal"},
+                   default="1"),
         ],
         "state_fields": [
             entity("subexpression", "Значение (subexpression)", allow_var_ref=True,
@@ -67,9 +80,12 @@ TEST_TYPES = {
         "family": "linux",
         "tag": "inetlisteningservers",
         "object_fields": [
-            entity("protocol", "Протокол (tcp/udp)", is_plain_value=True),
-            entity("local_address", "Локальный адрес", is_plain_value=True),
-            entity("local_port", "Локальный порт", is_plain_value=True),
+            entity("protocol", "Протокол (tcp/udp)", required=True, is_plain_value=True, default="tcp"),
+            # Адрес обязателен по схеме; «любой адрес» задаётся шаблоном
+            entity("local_address", "Локальный адрес", required=True, is_plain_value=True,
+                   attrs={"operation": "pattern match"}, default=".*"),
+            entity("local_port", "Локальный порт", required=True, is_plain_value=True,
+                   attrs={"datatype": "int"}),
         ],
         "state_fields": [
             entity("protocol", "Протокол"),
@@ -114,8 +130,8 @@ TEST_TYPES = {
         ],
         "state_fields": [
             entity("type", "Тип объекта", options=["file", "directory", "symbolic link"]),
-            entity("uid", "UID владельца", datatype="int"),
-            entity("gid", "GID группы", datatype="int"),
+            entity("user_id", "UID владельца", datatype="int"),
+            entity("group_id", "GID группы", datatype="int"),
             entity("suid", "SUID", datatype="boolean"),
             entity("sgid", "SGID", datatype="boolean"),
             entity("sticky", "Sticky bit", datatype="boolean"),
@@ -329,6 +345,155 @@ TEST_TYPE_LABELS = {
 }
 
 # Те же названия по-английски (дублирование подписи по xml:lang в интерфейсе).
+# =====================================================================
+# Сверка со схемами OVAL 5.11.2
+#
+# Определения ниже замещают ранние описания полей для типов, где те
+# расходились со схемой: неверные имена (gecos вместо gcos,
+# passwd_complexity вместо password_complexity, выдуманные
+# lockout_bad_count и auditing_subcategory) и неверный порядок элементов.
+# Порядок важен: схема задаёт элементы как xsd:sequence, и документ с
+# переставленными полями не проходит проверку (oscap oval validate).
+#
+# Сверка выполнялась автоматически: имена и порядок прочитаны из XSD
+# (/usr/share/openscap/schemas/oval/5.11.2/*-definitions-schema.xsd).
+# =====================================================================
+
+_AUDIT = ["AUDIT_NONE", "AUDIT_SUCCESS", "AUDIT_FAILURE", "AUDIT_SUCCESS_FAILURE"]
+
+def _audit(name, label):
+    return entity(name, label, options=_AUDIT)
+
+_SCHEMA_FIXES = {
+    "linux:inetlisteningservers_test": {"state_fields": [
+        entity("protocol", "Протокол"),
+        entity("local_address", "Локальный адрес"),
+        entity("local_port", "Локальный порт", datatype="int"),
+        entity("program_name", "Имя программы"),
+        entity("pid", "PID процесса", datatype="int"),
+        entity("user_id", "UID владельца процесса", datatype="int"),
+    ]},
+    "unix:file_test": {"state_fields": [
+        entity("type", "Тип файла"),
+        entity("group_id", "GID группы", datatype="int"),
+        entity("user_id", "UID владельца", datatype="int"),
+        entity("suid", "SUID", datatype="boolean"),
+        entity("sgid", "SGID", datatype="boolean"),
+        entity("sticky", "Sticky-бит", datatype="boolean"),
+        entity("uread", "Чтение для владельца", datatype="boolean"),
+        entity("uwrite", "Запись для владельца", datatype="boolean"),
+        entity("uexec", "Выполнение для владельца", datatype="boolean"),
+        entity("gread", "Чтение для группы", datatype="boolean"),
+        entity("gwrite", "Запись для группы", datatype="boolean"),
+        entity("gexec", "Выполнение для группы", datatype="boolean"),
+        entity("oread", "Чтение для прочих", datatype="boolean"),
+        entity("owrite", "Запись для прочих", datatype="boolean"),
+        entity("oexec", "Выполнение для прочих", datatype="boolean"),
+    ]},
+    "linux:dpkginfo_test": {"state_fields": [
+        entity("arch", "Архитектура"),
+        entity("epoch", "Эпоха"),
+        entity("release", "Выпуск"),
+        entity("version", "Версия", datatype="version"),
+        entity("evr", "Полная версия (EVR)", datatype="evr_string"),
+    ]},
+    "linux:rpminfo_test": {"state_fields": [
+        entity("arch", "Архитектура"),
+        entity("release", "Выпуск"),
+        entity("version", "Версия", datatype="version"),
+        entity("evr", "Полная версия (EVR)", datatype="evr_string"),
+        entity("signature_keyid", "Идентификатор ключа подписи"),
+    ]},
+    "windows:auditeventpolicysubcategories_test": {
+        # Объект пустой: политика аудита одна на систему. Каждая подкатегория —
+        # отдельное поле состояния со значением из перечня AUDIT_*.
+        "object_fields": [],
+        "state_fields": [
+            _audit("credential_validation", "Проверка учётных данных"),
+            _audit("security_group_management", "Управление группами безопасности"),
+            _audit("user_account_management", "Управление учётными записями"),
+            _audit("process_creation", "Создание процессов"),
+            _audit("account_lockout", "Блокировка учётных записей"),
+            _audit("logoff", "Выход из системы"),
+            _audit("logon", "Вход в систему"),
+            _audit("special_logon", "Специальный вход"),
+            _audit("audit_policy_change", "Изменение политики аудита"),
+            _audit("authentication_policy_change", "Изменение политики проверки подлинности"),
+            _audit("sensitive_privilege_use", "Использование важных привилегий"),
+            _audit("security_state_change", "Изменение состояния безопасности"),
+            _audit("security_system_extension", "Расширение системы безопасности"),
+            _audit("system_integrity", "Целостность системы"),
+        ],
+    },
+    "windows:lockoutpolicy_test": {"state_fields": [
+        entity("force_logoff", "Принудительный выход по истечении времени", datatype="int"),
+        entity("lockout_duration", "Длительность блокировки, с", datatype="int", allow_var_ref=True),
+        entity("lockout_observation_window", "Окно подсчёта неудачных попыток, с", datatype="int", allow_var_ref=True),
+        entity("lockout_threshold", "Порог блокировки (число попыток)", datatype="int",
+               default_operation="less than or equal", allow_var_ref=True),
+    ]},
+    "windows:passwordpolicy_test": {"state_fields": [
+        entity("max_passwd_age", "Максимальный срок действия пароля, с", datatype="int",
+               default_operation="less than or equal", allow_var_ref=True),
+        entity("min_passwd_age", "Минимальный срок действия пароля, с", datatype="int",
+               default_operation="greater than or equal", allow_var_ref=True),
+        entity("min_passwd_len", "Минимальная длина пароля", datatype="int",
+               default_operation="greater than or equal", allow_var_ref=True),
+        entity("password_hist_len", "Длина истории паролей", datatype="int",
+               default_operation="greater than or equal", allow_var_ref=True),
+        entity("password_complexity", "Требования к сложности пароля", datatype="boolean"),
+        entity("reversible_encryption", "Хранение паролей с обратимым шифрованием", datatype="boolean"),
+    ]},
+    "windows:sid_sid_test": {
+        "object_fields": [entity("trustee_sid", "SID учётной записи", required=True, is_plain_value=True)],
+        "state_fields": [
+            entity("trustee_sid", "SID учётной записи"),
+            entity("trustee_name", "Имя учётной записи"),
+            entity("trustee_domain", "Домен учётной записи"),
+        ],
+    },
+    "windows:user_sid55_test": {
+        "object_fields": [entity("user_sid", "SID пользователя", required=True, is_plain_value=True)],
+        "state_fields": [
+            entity("user_sid", "SID пользователя"),
+            entity("enabled", "Учётная запись включена", datatype="boolean"),
+            entity("group_sid", "SID группы"),
+        ],
+    },
+    "windows:userright_test": {
+        "object_fields": [entity("userright", "Право пользователя", required=True, is_plain_value=True)],
+        "state_fields": [
+            entity("userright", "Право пользователя"),
+            entity("trustee_name", "Имя учётной записи"),
+            entity("trustee_sid", "SID учётной записи"),
+        ],
+    },
+}
+
+# Права пользователей Windows — закрытое перечисление схемы: произвольное
+# значение не пройдёт проверку, поэтому поле выводится выпадающим списком.
+_USERRIGHTS = ["SE_ASSIGNPRIMARYTOKEN_NAME", "SE_AUDIT_NAME", "SE_BACKUP_NAME", "SE_CHANGE_NOTIFY_NAME", "SE_CREATE_GLOBAL_NAME", "SE_CREATE_PAGEFILE_NAME", "SE_CREATE_PERMANENT_NAME", "SE_CREATE_SYMBOLIC_LINK_NAME", "SE_CREATE_TOKEN_NAME", "SE_DEBUG_NAME", "SE_ENABLE_DELEGATION_NAME", "SE_IMPERSONATE_NAME", "SE_INC_BASE_PRIORITY_NAME", "SE_INCREASE_QUOTA_NAME", "SE_INC_WORKING_SET_NAME", "SE_LOAD_DRIVER_NAME", "SE_LOCK_MEMORY_NAME", "SE_MACHINE_ACCOUNT_NAME", "SE_MANAGE_VOLUME_NAME", "SE_PROF_SINGLE_PROCESS_NAME", "SE_RELABEL_NAME", "SE_REMOTE_SHUTDOWN_NAME", "SE_RESTORE_NAME", "SE_SECURITY_NAME", "SE_SHUTDOWN_NAME", "SE_SYNC_AGENT_NAME", "SE_SYSTEM_ENVIRONMENT_NAME", "SE_SYSTEM_PROFILE_NAME", "SE_SYSTEMTIME_NAME", "SE_TAKE_OWNERSHIP_NAME", "SE_TCB_NAME", "SE_TIME_ZONE_NAME", "SE_TRUSTED_CREDMAN_ACCESS_NAME", "SE_UNDOCK_NAME", "SE_UNSOLICITED_INPUT_NAME", "SE_BATCH_LOGON_NAME", "SE_DENY_BATCH_LOGON_NAME", "SE_DENY_INTERACTIVE_LOGON_NAME", "SE_DENY_NETWORK_LOGON_NAME", "SE_DENY_REMOTE_INTERACTIVE_LOGON_NAME", "SE_DENY_SERVICE_LOGON_NAME", "SE_INTERACTIVE_LOGON_NAME", "SE_NETWORK_LOGON_NAME", "SE_REMOTE_INTERACTIVE_LOGON_NAME", "SE_SERVICE_LOGON_NAME"]
+for _f in _SCHEMA_FIXES["windows:userright_test"]["object_fields"] + _SCHEMA_FIXES["windows:userright_test"]["state_fields"]:
+    if _f["name"] == "userright":
+        _f["options"] = _USERRIGHTS
+
+# У wmi57_state поле result — составная запись (record), а не строка:
+# простым значением его задать нельзя, поэтому из формы оно исключено.
+_SCHEMA_FIXES["windows:wmi57_test"] = {"state_fields": [
+    entity("namespace", "Пространство имён WMI"),
+    entity("wql", "Запрос WQL"),
+]}
+
+for _t, _fix in _SCHEMA_FIXES.items():
+    if _t in TEST_TYPES:
+        TEST_TYPES[_t].update(_fix)
+
+# unix:password_state: поле называется gcos (а не gecos)
+for _f in TEST_TYPES.get("unix:password_test", {}).get("state_fields", []):
+    if _f["name"] == "gecos":
+        _f["name"] = "gcos"
+
+
 TEST_TYPE_LABELS_EN = {
     "ind:textfilecontent54_test": "Text file content (pattern match)",
     "ind:variable_test": "Variable value",

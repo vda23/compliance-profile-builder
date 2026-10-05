@@ -1,0 +1,1043 @@
+{
+  "pack": "linux-base",
+  "title": "Базовые проверки конфигурации Linux",
+  "description": "Типовые технические проверки защищённости для Debian-подобных и RPM-подобных систем. Состав опирается на общепринятые практики усиления конфигурации (CIS Benchmark и аналоги). Номера пунктов конкретных документов здесь не проставлены — они подставляются на этапе сопоставления с загруженным нормативным документом.",
+  "checks": [
+    {
+      "id": "ssh.permit_root_login",
+      "title": "Запрет входа суперпользователя по SSH",
+      "description": "Проверяется, что параметр PermitRootLogin в /etc/ssh/sshd_config имеет значение no.",
+      "rationale": "Прямой вход суперпользователя по сети лишает систему персональной ответственности: в журналах не видно, кто именно выполнял действия. Администраторы должны входить под своими учётными записями и повышать права отдельно.",
+      "category": "Удалённый доступ",
+      "keywords": [
+        "ssh",
+        "root",
+        "суперпользователь",
+        "удалённый доступ",
+        "вход",
+        "аутентификация",
+        "привилегированный"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "no",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/etc/ssh",
+          "filename": "sshd_config",
+          "pattern": "^[[:space:]]*PermitRootLogin[[:space:]]+([a-zA-Z-]+)"
+        },
+        "state": {
+          "subexpression": {
+            "value": "^{{value}}$",
+            "operation": "pattern match",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "В файле /etc/ssh/sshd_config задать PermitRootLogin no и перезапустить службу sshd."
+    },
+    {
+      "id": "ssh.permit_empty_passwords",
+      "title": "Запрет входа по SSH с пустым паролем",
+      "description": "Проверяется, что параметр PermitEmptyPasswords в /etc/ssh/sshd_config имеет значение no.",
+      "rationale": "Учётная запись с пустым паролем делает удалённый доступ открытым для любого, кто знает имя пользователя.",
+      "category": "Удалённый доступ",
+      "keywords": [
+        "ssh",
+        "пустой пароль",
+        "аутентификация",
+        "удалённый доступ",
+        "парольная защита"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "no",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/etc/ssh",
+          "filename": "sshd_config",
+          "pattern": "^[[:space:]]*PermitEmptyPasswords[[:space:]]+([a-zA-Z-]+)"
+        },
+        "state": {
+          "subexpression": {
+            "value": "^{{value}}$",
+            "operation": "pattern match",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "В файле /etc/ssh/sshd_config задать PermitEmptyPasswords no и перезапустить службу sshd."
+    },
+    {
+      "id": "ssh.max_auth_tries",
+      "title": "Ограничение числа попыток аутентификации по SSH",
+      "description": "Проверяется, что параметр MaxAuthTries в /etc/ssh/sshd_config не превышает заданного значения.",
+      "rationale": "Ограничение попыток в рамках одного соединения замедляет подбор пароля и делает попытки подбора заметными в журнале.",
+      "category": "Удалённый доступ",
+      "keywords": [
+        "ssh",
+        "подбор пароля",
+        "попытки аутентификации",
+        "перебор",
+        "блокировка"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "pattern",
+          "title": "Допустимые значения (регулярное выражение)",
+          "default": "^[1-4]$",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/etc/ssh",
+          "filename": "sshd_config",
+          "pattern": "^[[:space:]]*MaxAuthTries[[:space:]]+([0-9]+)"
+        },
+        "state": {
+          "subexpression": {
+            "value": "{{pattern}}",
+            "operation": "pattern match",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "В файле /etc/ssh/sshd_config задать MaxAuthTries 4 или меньше и перезапустить службу sshd."
+    },
+    {
+      "id": "ssh.x11_forwarding",
+      "title": "Запрет перенаправления X11 по SSH",
+      "description": "Проверяется, что параметр X11Forwarding в /etc/ssh/sshd_config имеет значение no.",
+      "rationale": "Перенаправление графических сессий расширяет поверхность атаки и на серверах без графической среды не требуется.",
+      "category": "Удалённый доступ",
+      "keywords": [
+        "ssh",
+        "x11",
+        "перенаправление",
+        "графическая сессия"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "no",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/etc/ssh",
+          "filename": "sshd_config",
+          "pattern": "^[[:space:]]*X11Forwarding[[:space:]]+([a-zA-Z-]+)"
+        },
+        "state": {
+          "subexpression": {
+            "value": "^{{value}}$",
+            "operation": "pattern match",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "В файле /etc/ssh/sshd_config задать X11Forwarding no и перезапустить службу sshd."
+    },
+    {
+      "id": "password.minlen",
+      "title": "Минимальная длина пароля",
+      "description": "Проверяется, что параметр minlen в /etc/security/pwquality.conf задаёт длину пароля не меньше требуемой.",
+      "rationale": "Короткий пароль подбирается перебором за приемлемое время, поэтому минимальная длина задаётся политикой и контролируется автоматически.",
+      "category": "Парольная политика",
+      "keywords": [
+        "пароль",
+        "длина пароля",
+        "парольная защита",
+        "сложность пароля",
+        "идентификация",
+        "аутентификация"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "pattern",
+          "title": "Допустимые значения (регулярное выражение)",
+          "default": "^(1[4-9]|[2-9][0-9]|[0-9]{3,})$",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/etc/security",
+          "filename": "pwquality.conf",
+          "pattern": "^[[:space:]]*minlen[[:space:]]*=[[:space:]]*([0-9]+)"
+        },
+        "state": {
+          "subexpression": {
+            "value": "{{pattern}}",
+            "operation": "pattern match",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "В файле /etc/security/pwquality.conf задать minlen = 14 (или иное значение согласно политике)."
+    },
+    {
+      "id": "password.max_days",
+      "title": "Максимальный срок действия пароля",
+      "description": "Проверяется, что параметр PASS_MAX_DAYS в /etc/login.defs не превышает заданного значения.",
+      "rationale": "Ограничение срока действия пароля сокращает окно использования скомпрометированной учётной записи.",
+      "category": "Парольная политика",
+      "keywords": [
+        "пароль",
+        "срок действия",
+        "смена пароля",
+        "устаревание",
+        "парольная политика"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "pattern",
+          "title": "Допустимые значения (регулярное выражение)",
+          "default": "^([1-9]|[1-8][0-9]|90)$",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/etc",
+          "filename": "login.defs",
+          "pattern": "^[[:space:]]*PASS_MAX_DAYS[[:space:]]+([0-9]+)"
+        },
+        "state": {
+          "subexpression": {
+            "value": "{{pattern}}",
+            "operation": "pattern match",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "В файле /etc/login.defs задать PASS_MAX_DAYS не более 90 (или иное значение согласно политике)."
+    },
+    {
+      "id": "password.min_days",
+      "title": "Минимальный интервал между сменами пароля",
+      "description": "Проверяется, что параметр PASS_MIN_DAYS в /etc/login.defs имеет значение не менее 1.",
+      "rationale": "Без минимального интервала пользователь может несколько раз подряд сменить пароль и вернуться к прежнему, обойдя требование хранения истории.",
+      "category": "Парольная политика",
+      "keywords": [
+        "пароль",
+        "смена пароля",
+        "история паролей",
+        "интервал"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "pattern",
+          "title": "Допустимые значения (регулярное выражение)",
+          "default": "^([1-9]|[1-9][0-9]+)$",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/etc",
+          "filename": "login.defs",
+          "pattern": "^[[:space:]]*PASS_MIN_DAYS[[:space:]]+([0-9]+)"
+        },
+        "state": {
+          "subexpression": {
+            "value": "{{pattern}}",
+            "operation": "pattern match",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "В файле /etc/login.defs задать PASS_MIN_DAYS 1 или больше."
+    },
+    {
+      "id": "sysctl.ip_forward",
+      "title": "Отключение переадресации IP-пакетов",
+      "description": "Проверяется, что параметр ядра net.ipv4.ip_forward равен 0.",
+      "rationale": "Узел, не являющийся маршрутизатором, не должен передавать транзитный трафик: это позволяет обойти сегментацию сети.",
+      "category": "Сетевые параметры",
+      "keywords": [
+        "сеть",
+        "маршрутизация",
+        "переадресация",
+        "ядро",
+        "sysctl",
+        "сегментация"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "0",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "unix:sysctl_test",
+        "object": {
+          "name": "net.ipv4.ip_forward"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать net.ipv4.ip_forward = 0 в /etc/sysctl.conf или /etc/sysctl.d/ и применить sysctl -p."
+    },
+    {
+      "id": "sysctl.accept_redirects",
+      "title": "Запрет приёма ICMP-перенаправлений",
+      "description": "Проверяется, что параметр ядра net.ipv4.conf.all.accept_redirects равен 0.",
+      "rationale": "Приём ICMP-перенаправлений позволяет злоумышленнику изменить таблицу маршрутизации узла и перенаправить трафик через себя.",
+      "category": "Сетевые параметры",
+      "keywords": [
+        "сеть",
+        "icmp",
+        "перенаправление",
+        "маршрутизация",
+        "ядро",
+        "sysctl"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "0",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "unix:sysctl_test",
+        "object": {
+          "name": "net.ipv4.conf.all.accept_redirects"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать net.ipv4.conf.all.accept_redirects = 0 в /etc/sysctl.d/ и применить sysctl -p."
+    },
+    {
+      "id": "sysctl.send_redirects",
+      "title": "Запрет отправки ICMP-перенаправлений",
+      "description": "Проверяется, что параметр ядра net.ipv4.conf.all.send_redirects равен 0.",
+      "rationale": "Отправка перенаправлений нужна только маршрутизаторам; на обычном узле она раскрывает сведения о топологии сети.",
+      "category": "Сетевые параметры",
+      "keywords": [
+        "сеть",
+        "icmp",
+        "перенаправление",
+        "топология",
+        "ядро",
+        "sysctl"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "0",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "unix:sysctl_test",
+        "object": {
+          "name": "net.ipv4.conf.all.send_redirects"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать net.ipv4.conf.all.send_redirects = 0 в /etc/sysctl.d/ и применить sysctl -p."
+    },
+    {
+      "id": "sysctl.rp_filter",
+      "title": "Проверка обратного пути пакетов",
+      "description": "Проверяется, что параметр ядра net.ipv4.conf.all.rp_filter равен 1.",
+      "rationale": "Проверка обратного пути отбрасывает пакеты с подменённым адресом источника, затрудняя подмену адреса.",
+      "category": "Сетевые параметры",
+      "keywords": [
+        "сеть",
+        "подмена адреса",
+        "spoofing",
+        "фильтрация",
+        "ядро",
+        "sysctl"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "1",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "unix:sysctl_test",
+        "object": {
+          "name": "net.ipv4.conf.all.rp_filter"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать net.ipv4.conf.all.rp_filter = 1 в /etc/sysctl.d/ и применить sysctl -p."
+    },
+    {
+      "id": "sysctl.aslr",
+      "title": "Рандомизация адресного пространства",
+      "description": "Проверяется, что параметр ядра kernel.randomize_va_space равен 2.",
+      "rationale": "Рандомизация размещения областей памяти существенно усложняет эксплуатацию уязвимостей переполнения буфера.",
+      "category": "Параметры ядра",
+      "keywords": [
+        "ядро",
+        "память",
+        "aslr",
+        "рандомизация",
+        "переполнение буфера",
+        "эксплуатация"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "2",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "unix:sysctl_test",
+        "object": {
+          "name": "kernel.randomize_va_space"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать kernel.randomize_va_space = 2 в /etc/sysctl.d/ и применить sysctl -p."
+    },
+    {
+      "id": "file.passwd_owner",
+      "title": "Владелец файла /etc/passwd",
+      "description": "Проверяется, что владельцем файла /etc/passwd является суперпользователь (uid 0).",
+      "rationale": "Возможность изменения файла учётных записей непривилегированным пользователем ведёт к полному захвату системы.",
+      "category": "Права на файлы",
+      "keywords": [
+        "права доступа",
+        "владелец",
+        "учётные записи",
+        "passwd",
+        "файловая система",
+        "разграничение доступа"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "uid",
+          "title": "Идентификатор владельца",
+          "default": "0",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "unix:file_test",
+        "object": {
+          "path": "/etc",
+          "filename": "passwd"
+        },
+        "state": {
+          "user_id": {
+            "value": "{{uid}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Выполнить chown root:root /etc/passwd."
+    },
+    {
+      "id": "file.shadow_not_world_readable",
+      "title": "Файл /etc/shadow недоступен для чтения прочим пользователям",
+      "description": "Проверяется, что у файла /etc/shadow снят бит чтения для категории «прочие».",
+      "rationale": "Файл содержит хеши паролей. Доступ на чтение любому пользователю системы позволяет offline-подбор паролей всех учётных записей.",
+      "category": "Права на файлы",
+      "keywords": [
+        "права доступа",
+        "хеш пароля",
+        "shadow",
+        "конфиденциальность",
+        "разграничение доступа"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "oread",
+          "title": "Чтение для прочих",
+          "default": "false",
+          "datatype": "boolean"
+        }
+      ],
+      "check": {
+        "type": "unix:file_test",
+        "object": {
+          "path": "/etc",
+          "filename": "shadow"
+        },
+        "state": {
+          "oread": {
+            "value": "{{oread}}",
+            "operation": "equals",
+            "datatype": "boolean"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Выполнить chmod o-r /etc/shadow (обычно права 640 root:shadow)."
+    },
+    {
+      "id": "file.crontab_owner",
+      "title": "Владелец файла /etc/crontab",
+      "description": "Проверяется, что владельцем файла /etc/crontab является суперпользователь (uid 0).",
+      "rationale": "Задания планировщика выполняются с высокими привилегиями; возможность их правки означает выполнение произвольного кода от имени суперпользователя.",
+      "category": "Права на файлы",
+      "keywords": [
+        "планировщик",
+        "cron",
+        "права доступа",
+        "владелец",
+        "выполнение кода"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "uid",
+          "title": "Идентификатор владельца",
+          "default": "0",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "unix:file_test",
+        "object": {
+          "path": "/etc",
+          "filename": "crontab"
+        },
+        "state": {
+          "user_id": {
+            "value": "{{uid}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Выполнить chown root:root /etc/crontab и chmod 600 /etc/crontab."
+    },
+    {
+      "id": "audit.package_installed",
+      "title": "Наличие подсистемы аудита",
+      "description": "Проверяется, что в системе установлен пакет подсистемы аудита.",
+      "rationale": "Без подсистемы аудита события безопасности не регистрируются, и разбор инцидента становится невозможным.",
+      "category": "Регистрация событий",
+      "keywords": [
+        "аудит",
+        "журналирование",
+        "регистрация событий",
+        "инцидент",
+        "auditd"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [],
+      "check": {
+        "type": "pkg",
+        "object": {
+          "name": {
+            "deb": "auditd",
+            "rpm": "audit"
+          }
+        },
+        "state": {},
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Установить пакет auditd (DEB) или audit (RPM) и включить службу."
+    },
+    {
+      "id": "audit.service_active",
+      "title": "Служба аудита запущена",
+      "description": "Проверяется, что служба auditd находится в активном состоянии.",
+      "rationale": "Установленная, но не запущенная подсистема аудита не регистрирует события — наличие пакета само по себе ничего не гарантирует.",
+      "category": "Регистрация событий",
+      "keywords": [
+        "аудит",
+        "служба",
+        "журналирование",
+        "регистрация событий",
+        "systemd"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "state",
+          "title": "Ожидаемое состояние",
+          "default": "active",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "linux:systemdunitproperty_test",
+        "object": {
+          "unit": "auditd.service",
+          "property": "ActiveState"
+        },
+        "state": {
+          "value": {
+            "value": "{{state}}",
+            "operation": "equals",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Выполнить systemctl enable --now auditd."
+    },
+    {
+      "id": "net.telnet_port_closed",
+      "title": "Порт telnet не прослушивается",
+      "description": "Проверяется, что в системе нет службы, прослушивающей TCP-порт 23.",
+      "rationale": "Протокол telnet передаёт учётные данные в открытом виде. Его наличие в сети означает возможность перехвата паролей.",
+      "category": "Сетевые службы",
+      "keywords": [
+        "telnet",
+        "открытый порт",
+        "сетевые службы",
+        "перехват",
+        "шифрование",
+        "незащищённый протокол"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "port",
+          "title": "Порт",
+          "default": "23",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "linux:inetlisteningservers_test",
+        "object": {
+          "protocol": "tcp",
+          "local_port": "{{port}}"
+        },
+        "state": {},
+        "check": "all",
+        "check_existence": "none_exist"
+      },
+      "remediation": "Удалить пакет telnetd и отключить соответствующую службу."
+    },
+    {
+      "id": "mount.tmp_nodev",
+      "title": "Раздел /tmp смонтирован с параметром nodev",
+      "description": "Проверяется, что параметры монтирования раздела /tmp содержат nodev.",
+      "rationale": "Параметр запрещает интерпретацию файлов устройств в каталоге, доступном на запись всем пользователям, — это закрывает один из путей повышения привилегий.",
+      "category": "Файловые системы",
+      "keywords": [
+        "монтирование",
+        "tmp",
+        "nodev",
+        "файловая система",
+        "повышение привилегий",
+        "разделы"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "option",
+          "title": "Параметр монтирования",
+          "default": "nodev",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "linux:partition_test",
+        "object": {
+          "mount_point": "/tmp"
+        },
+        "state": {
+          "mount_options": {
+            "value": "{{option}}",
+            "operation": "equals",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Добавить nodev в параметры монтирования /tmp в /etc/fstab и перемонтировать раздел."
+    },
+    {
+      "id": "org.access_control_procedure",
+      "title": "Порядок предоставления и пересмотра прав доступа",
+      "description": "Наличие утверждённого порядка предоставления, изменения и отзыва прав доступа, а также периодического пересмотра выданных прав.",
+      "rationale": "Требование относится к организационным мерам: оно проверяется анализом документов и записей, а не состоянием настроек узла.",
+      "category": "Организационные меры",
+      "keywords": [
+        "порядок доступа",
+        "пересмотр прав",
+        "организационные меры",
+        "регламент",
+        "матрица доступа",
+        "ответственные"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": []
+      },
+      "manual": true,
+      "remediation": "Утвердить регламент управления доступом, назначить ответственных, вести записи о предоставлении и пересмотре прав."
+    },
+    {
+      "id": "org.security_awareness",
+      "title": "Информирование и обучение персонала",
+      "description": "Проведение инструктажей и обучения пользователей правилам информационной безопасности с подтверждением ознакомления.",
+      "rationale": "Требование относится к организационным мерам: подтверждается журналами инструктажей и материалами обучения, а не конфигурацией систем.",
+      "category": "Организационные меры",
+      "keywords": [
+        "обучение",
+        "инструктаж",
+        "осведомлённость",
+        "персонал",
+        "организационные меры"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": []
+      },
+      "manual": true,
+      "remediation": "Организовать периодические инструктажи, вести журнал ознакомления сотрудников."
+    },
+    {
+      "id": "password.history",
+      "title": "Запрет повторного использования паролей",
+      "description": "Проверяется, что параметр remember в /etc/security/pwhistory.conf задаёт хранение не менее 5 предыдущих паролей.",
+      "rationale": "Без хранения истории пользователь при смене пароля может вернуться к прежнему, и требование периодической смены теряет смысл.",
+      "category": "Парольная политика",
+      "keywords": [
+        "история паролей",
+        "повторное использование",
+        "pwhistory",
+        "remember",
+        "парольная политика"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "pattern",
+          "title": "Допустимые значения (регулярное выражение)",
+          "default": "^([5-9]|[1-9][0-9]+)$",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/etc/security",
+          "filename": "pwhistory.conf",
+          "pattern": "^[[:space:]]*remember[[:space:]]*=[[:space:]]*([0-9]+)"
+        },
+        "state": {
+          "subexpression": {
+            "value": "{{pattern}}",
+            "operation": "pattern match",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "В /etc/security/pwhistory.conf задать remember = 5 (или больше) и подключить pam_pwhistory в стеке смены пароля.",
+      "notes": "Файл pwhistory.conf поддерживается PAM версии 1.5 и новее. В системах со старым PAM параметр remember задаётся в строке pam_pwhistory.so файла стека PAM — путь к нему зависит от дистрибутива."
+    }
+  ]
+}

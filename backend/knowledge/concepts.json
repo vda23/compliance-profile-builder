@@ -1,0 +1,1476 @@
+{
+  "knowledge": "requirements-thesaurus",
+  "title": "Тезаурус требований: формулировки нормативных документов",
+  "description": "Слой между текстом нормативного документа и техническим каталогом проверок. Хранит формулировки-маркеры на русском и английском, по которым тема требования узнаётся в тексте, и ссылки на семейства документов, где тема встречается. Тексты стандартов не воспроизводятся: хранятся только обозначения и собственные формулировки. Ссылки с verify=true — ориентир, требующий сверки с вашей редакцией документа.",
+  "concepts": [
+    {
+      "id": "access.ssh_root_login",
+      "title": "Запрет удалённого входа суперпользователя",
+      "ru": [
+        "вход суперпользователя",
+        "permitrootlogin",
+        "удалённый вход root",
+        "прямой вход root",
+        "привилегированная учётная запись",
+        "отключение входа суперпользователя"
+      ],
+      "en": [
+        "root login",
+        "remote root access",
+        "disable root login",
+        "direct root login",
+        "privileged account"
+      ],
+      "themes": [
+        "Удалённый доступ",
+        "Управление доступом"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, Рекомендации по настройке ОС Linux (2022)",
+          "ref": "2.1.2",
+          "verify": false
+        },
+        {
+          "family": "CIS Benchmark, раздел настройки SSH",
+          "ref": "SSH Server Configuration",
+          "verify": true
+        },
+        {
+          "family": "NIST SP 800-53",
+          "ref": "AC-6",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "access.ssh_empty_password",
+      "title": "Запрет аутентификации с пустым паролем",
+      "ru": [
+        "пустой пароль",
+        "пустыми паролями",
+        "permitemptypasswords",
+        "без пароля"
+      ],
+      "en": [
+        "empty password",
+        "blank password",
+        "null password"
+      ],
+      "themes": [
+        "Удалённый доступ",
+        "Парольная политика"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, Рекомендации по настройке ОС Linux (2022)",
+          "ref": "2.1.1",
+          "verify": false
+        },
+        {
+          "family": "CIS Benchmark, раздел настройки SSH",
+          "ref": "SSH Server Configuration",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "access.ssh_auth_attempts",
+      "title": "Ограничение числа попыток аутентификации",
+      "ru": [
+        "попыток аутентификации",
+        "maxauthtries",
+        "подбор пароля",
+        "перебор паролей",
+        "число неудачных попыток",
+        "блокировка после неудачных",
+        "неуспешных попыток",
+        "неудачных попыток входа",
+        "попыток входа",
+        "количество неуспешных попыток",
+        "блокировка учётной записи"
+      ],
+      "en": [
+        "authentication attempts",
+        "maxauthtries",
+        "brute force",
+        "failed login attempts",
+        "lockout threshold"
+      ],
+      "themes": [
+        "Удалённый доступ",
+        "Управление доступом"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, приказ №17",
+          "ref": "ИАФ",
+          "verify": true
+        },
+        {
+          "family": "CIS Benchmark, раздел настройки SSH",
+          "ref": "SSH Server Configuration",
+          "verify": true
+        },
+        {
+          "family": "NIST SP 800-53",
+          "ref": "AC-7",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "access.session_timeout",
+      "title": "Ограничение времени неактивной сессии",
+      "ru": [
+        "время неактивности",
+        "таймаут сессии",
+        "clientaliveinterval",
+        "завершение сеанса",
+        "блокировка сеанса",
+        "бездействие"
+      ],
+      "en": [
+        "session timeout",
+        "idle timeout",
+        "clientaliveinterval",
+        "session termination",
+        "inactivity"
+      ],
+      "themes": [
+        "Удалённый доступ",
+        "Управление доступом"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, приказ №17",
+          "ref": "УПД",
+          "verify": true
+        },
+        {
+          "family": "NIST SP 800-53",
+          "ref": "AC-11",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "privilege.su_restriction",
+      "title": "Ограничение доступа к команде su",
+      "ru": [
+        "команде su",
+        "pam_wheel",
+        "группы wheel",
+        "ограничение доступа к su"
+      ],
+      "en": [
+        "su command",
+        "pam_wheel",
+        "wheel group",
+        "restrict su"
+      ],
+      "themes": [
+        "Повышение привилегий",
+        "Управление доступом"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, Рекомендации по настройке ОС Linux (2022)",
+          "ref": "2.2.1",
+          "verify": false
+        },
+        {
+          "family": "CIS Benchmark, раздел ограничения su",
+          "ref": "Restrict su",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "privilege.sudo_review",
+      "title": "Пересмотр прав на использование sudo",
+      "ru": [
+        "sudoers",
+        "команду sudo",
+        "список пользователей sudo",
+        "пересмотр прав",
+        "разрешённых команд",
+        "ролевая модель"
+      ],
+      "en": [
+        "sudoers",
+        "sudo privileges",
+        "least privilege",
+        "privilege review",
+        "authorized commands"
+      ],
+      "themes": [
+        "Повышение привилегий",
+        "Организационные меры"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, Рекомендации по настройке ОС Linux (2022)",
+          "ref": "2.2.2",
+          "verify": false
+        },
+        {
+          "family": "ISO/IEC 27002, управление привилегированным доступом",
+          "ref": "8.2",
+          "verify": true
+        },
+        {
+          "family": "NIST SP 800-53",
+          "ref": "AC-6(7)",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "privilege.suid_audit",
+      "title": "Контроль SUID/SGID-приложений",
+      "ru": [
+        "suid",
+        "sgid",
+        "suid/sgid",
+        "битов suid",
+        "белый список приложений"
+      ],
+      "en": [
+        "suid",
+        "sgid",
+        "setuid",
+        "setgid",
+        "privilege escalation binaries"
+      ],
+      "themes": [
+        "Повышение привилегий",
+        "Права на файлы"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, Рекомендации по настройке ОС Linux (2022)",
+          "ref": "2.3.9",
+          "verify": false
+        },
+        {
+          "family": "CIS Benchmark, раздел аудита SUID",
+          "ref": "Audit SUID executables",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "password.length",
+      "title": "Минимальная длина пароля",
+      "ru": [
+        "длина пароля",
+        "минимальная длина",
+        "minlen",
+        "длиной не менее",
+        "количество символов пароля"
+      ],
+      "en": [
+        "password length",
+        "minimum length",
+        "minlen",
+        "minimum password length"
+      ],
+      "themes": [
+        "Парольная политика"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, приказ №17",
+          "ref": "ИАФ.1",
+          "verify": true
+        },
+        {
+          "family": "ГОСТ Р 57580.1, парольная защита",
+          "ref": "РД.1",
+          "verify": true
+        },
+        {
+          "family": "CIS Benchmark, раздел парольной политики",
+          "ref": "Password Policy",
+          "verify": true
+        },
+        {
+          "family": "NIST SP 800-53",
+          "ref": "IA-5",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "password.complexity",
+      "title": "Сложность пароля",
+      "ru": [
+        "сложность пароля",
+        "алфавит пароля",
+        "dcredit",
+        "ucredit",
+        "символов разных регистров",
+        "цифр и специальных символов"
+      ],
+      "en": [
+        "password complexity",
+        "character classes",
+        "dcredit",
+        "ucredit",
+        "special characters"
+      ],
+      "themes": [
+        "Парольная политика"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, приказ №17",
+          "ref": "ИАФ.1",
+          "verify": true
+        },
+        {
+          "family": "NIST SP 800-53",
+          "ref": "IA-5(1)",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "password.max_age",
+      "title": "Максимальный срок действия пароля",
+      "ru": [
+        "срок действия пароля",
+        "pass_max_days",
+        "периодическая смена",
+        "смены пароля не реже"
+      ],
+      "en": [
+        "password expiration",
+        "pass_max_days",
+        "maximum password age",
+        "password rotation"
+      ],
+      "themes": [
+        "Парольная политика"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, приказ №17",
+          "ref": "ИАФ.1",
+          "verify": true
+        },
+        {
+          "family": "ГОСТ Р 57580.1, парольная защита",
+          "ref": "РД.1",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "password.min_age",
+      "title": "Минимальный интервал смены пароля",
+      "ru": [
+        "pass_min_days",
+        "минимальный срок",
+        "интервал между сменами"
+      ],
+      "en": [
+        "pass_min_days",
+        "minimum password age"
+      ],
+      "themes": [
+        "Парольная политика"
+      ],
+      "doc_hints": [
+        {
+          "family": "CIS Benchmark, раздел парольной политики",
+          "ref": "Password Policy",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "password.history",
+      "title": "История паролей",
+      "ru": [
+        "история паролей",
+        "повторное использование пароля",
+        "ранее использованных паролей",
+        "password_hist_len",
+        "remember"
+      ],
+      "en": [
+        "password history",
+        "password reuse",
+        "remember previous passwords"
+      ],
+      "themes": [
+        "Парольная политика"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, приказ №17",
+          "ref": "ИАФ.1",
+          "verify": true
+        },
+        {
+          "family": "NIST SP 800-53",
+          "ref": "IA-5(1)",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "files.passwd_group_perms",
+      "title": "Права доступа к перечням пользователей и групп",
+      "ru": [
+        "/etc/passwd",
+        "/etc/group",
+        "перечнями пользовательских идентификаторов",
+        "файлам настройки пользователей",
+        "списка групп"
+      ],
+      "en": [
+        "/etc/passwd",
+        "/etc/group",
+        "user account files",
+        "group file permissions"
+      ],
+      "themes": [
+        "Права на файлы",
+        "Управление доступом"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, Рекомендации по настройке ОС Linux (2022)",
+          "ref": "2.3.1",
+          "verify": false
+        },
+        {
+          "family": "CIS Benchmark, раздел прав на системные файлы",
+          "ref": "System File Permissions",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "files.shadow_perms",
+      "title": "Защита хранилища хешей паролей",
+      "ru": [
+        "/etc/shadow",
+        "хешей паролей",
+        "хранилищам хешей",
+        "go-rwx"
+      ],
+      "en": [
+        "/etc/shadow",
+        "password hashes",
+        "shadow file permissions"
+      ],
+      "themes": [
+        "Права на файлы",
+        "Парольная политика"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, Рекомендации по настройке ОС Linux (2022)",
+          "ref": "2.3.1",
+          "verify": false
+        },
+        {
+          "family": "CIS Benchmark, раздел прав на системные файлы",
+          "ref": "System File Permissions",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "files.cron_perms",
+      "title": "Права доступа к заданиям планировщика",
+      "ru": [
+        "cron",
+        "crontab",
+        "планировщика задач",
+        "cron.d",
+        "cron.daily",
+        "файлам заданий"
+      ],
+      "en": [
+        "cron",
+        "crontab",
+        "scheduled tasks",
+        "cron.d",
+        "job files"
+      ],
+      "themes": [
+        "Права на файлы"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, Рекомендации по настройке ОС Linux (2022)",
+          "ref": "2.3.6",
+          "verify": false
+        },
+        {
+          "family": "CIS Benchmark, раздел настройки cron",
+          "ref": "Configure cron",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "files.home_dir_perms",
+      "title": "Права доступа к домашним каталогам",
+      "ru": [
+        "домашних директорий",
+        "домашним директориям",
+        "домашние каталоги",
+        "bash_history",
+        "bashrc",
+        "profile",
+        "rhosts"
+      ],
+      "en": [
+        "home directories",
+        "home directory permissions",
+        "dot files",
+        "bash_history"
+      ],
+      "themes": [
+        "Права на файлы"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, Рекомендации по настройке ОС Linux (2022)",
+          "ref": "2.3.10",
+          "verify": false
+        },
+        {
+          "family": "CIS Benchmark, раздел пользовательских настроек",
+          "ref": "User Home Directories",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "files.system_binaries",
+      "title": "Права доступа к исполняемым файлам и библиотекам",
+      "ru": [
+        "исполняемым файлам",
+        "библиотекам",
+        "модулям ядра",
+        "системным библиотекам",
+        "utilities"
+      ],
+      "en": [
+        "system binaries",
+        "libraries",
+        "kernel modules",
+        "executable permissions"
+      ],
+      "themes": [
+        "Права на файлы"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, Рекомендации по настройке ОС Linux (2022)",
+          "ref": "2.3.8",
+          "verify": false
+        }
+      ]
+    },
+    {
+      "id": "files.startup_scripts",
+      "title": "Права доступа к стартовым скриптам",
+      "ru": [
+        "стартовым скриптам",
+        "rc#.d",
+        ".service",
+        "автозапуска"
+      ],
+      "en": [
+        "startup scripts",
+        "init scripts",
+        "service files",
+        "boot scripts"
+      ],
+      "themes": [
+        "Права на файлы"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, Рекомендации по настройке ОС Linux (2022)",
+          "ref": "2.3.5",
+          "verify": false
+        }
+      ]
+    },
+    {
+      "id": "kernel.dmesg_restrict",
+      "title": "Ограничение доступа к журналу ядра",
+      "ru": [
+        "журналу ядра",
+        "dmesg",
+        "kernel.dmesg_restrict",
+        "cap_syslog"
+      ],
+      "en": [
+        "kernel log",
+        "dmesg",
+        "kernel.dmesg_restrict"
+      ],
+      "themes": [
+        "Параметры ядра"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, Рекомендации по настройке ОС Linux (2022)",
+          "ref": "2.4.1",
+          "verify": false
+        }
+      ]
+    },
+    {
+      "id": "kernel.kptr_restrict",
+      "title": "Скрытие адресов ядра",
+      "ru": [
+        "ядерные адреса",
+        "kernel.kptr_restrict",
+        "адреса в /proc",
+        "заменить адреса"
+      ],
+      "en": [
+        "kernel pointers",
+        "kptr_restrict",
+        "kernel address exposure"
+      ],
+      "themes": [
+        "Параметры ядра"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, Рекомендации по настройке ОС Linux (2022)",
+          "ref": "2.4.2",
+          "verify": false
+        }
+      ]
+    },
+    {
+      "id": "kernel.aslr",
+      "title": "Рандомизация адресного пространства",
+      "ru": [
+        "рандомизация адресного пространства",
+        "randomize_va_space",
+        "переполнение буфера",
+        "aslr"
+      ],
+      "en": [
+        "address space layout randomization",
+        "aslr",
+        "randomize_va_space",
+        "buffer overflow"
+      ],
+      "themes": [
+        "Параметры ядра"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, Рекомендации по настройке ОС Linux (2022)",
+          "ref": "2.5.11",
+          "verify": false
+        },
+        {
+          "family": "CIS Benchmark, раздел параметров ядра",
+          "ref": "Kernel Parameters",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "kernel.ptrace_scope",
+      "title": "Ограничение отладочного интерфейса ptrace",
+      "ru": [
+        "ptrace",
+        "подключение к другим процессам",
+        "yama"
+      ],
+      "en": [
+        "ptrace",
+        "process tracing",
+        "yama",
+        "debugging interface"
+      ],
+      "themes": [
+        "Параметры ядра"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, Рекомендации по настройке ОС Linux (2022)",
+          "ref": "2.6.1",
+          "verify": false
+        }
+      ]
+    },
+    {
+      "id": "kernel.bpf_restrict",
+      "title": "Ограничение подсистемы eBPF",
+      "ru": [
+        "bpf",
+        "ebpf",
+        "unprivileged_bpf",
+        "bpf_jit_harden"
+      ],
+      "en": [
+        "bpf",
+        "ebpf",
+        "unprivileged bpf",
+        "jit hardening"
+      ],
+      "themes": [
+        "Параметры ядра"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, Рекомендации по настройке ОС Linux (2022)",
+          "ref": "2.4.8",
+          "verify": false
+        }
+      ]
+    },
+    {
+      "id": "kernel.user_namespaces",
+      "title": "Ограничение user namespaces",
+      "ru": [
+        "user namespaces",
+        "max_user_namespaces",
+        "пространства имён"
+      ],
+      "en": [
+        "user namespaces",
+        "unprivileged user namespaces"
+      ],
+      "themes": [
+        "Параметры ядра"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, Рекомендации по настройке ОС Linux (2022)",
+          "ref": "2.5.5",
+          "verify": false
+        }
+      ]
+    },
+    {
+      "id": "kernel.fs_protections",
+      "title": "Защита от подмены ссылок и файлов",
+      "ru": [
+        "символическим ссылкам",
+        "жёсткими ссылками",
+        "symlinks",
+        "hardlinks",
+        "protected_fifos",
+        "protected_regular",
+        "непреднамеренной записи"
+      ],
+      "en": [
+        "symlink protection",
+        "hardlink protection",
+        "protected fifos",
+        "protected regular"
+      ],
+      "themes": [
+        "Параметры ядра",
+        "Файловые системы"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, Рекомендации по настройке ОС Linux (2022)",
+          "ref": "2.6.2",
+          "verify": false
+        }
+      ]
+    },
+    {
+      "id": "kernel.core_dump",
+      "title": "Ограничение создания дампов памяти",
+      "ru": [
+        "core dump",
+        "suid_dumpable",
+        "дамп памяти"
+      ],
+      "en": [
+        "core dump",
+        "suid_dumpable",
+        "memory dump"
+      ],
+      "themes": [
+        "Параметры ядра"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, Рекомендации по настройке ОС Linux (2022)",
+          "ref": "2.6.6",
+          "verify": false
+        }
+      ]
+    },
+    {
+      "id": "kernel.boot_hardening",
+      "title": "Параметры усиления при загрузке ядра",
+      "ru": [
+        "опции загрузки ядра",
+        "параметры загрузки",
+        "cmdline",
+        "init_on_alloc",
+        "slab_nomerge",
+        "iommu",
+        "mitigations",
+        "vsyscall",
+        "tsx",
+        "randomize_kstack"
+      ],
+      "en": [
+        "kernel boot parameters",
+        "cmdline",
+        "init_on_alloc",
+        "slab_nomerge",
+        "iommu",
+        "mitigations",
+        "vsyscall",
+        "tsx"
+      ],
+      "themes": [
+        "Параметры загрузки ядра"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, Рекомендации по настройке ОС Linux (2022)",
+          "ref": "2.4.3",
+          "verify": false
+        }
+      ]
+    },
+    {
+      "id": "kernel.attack_surface",
+      "title": "Уменьшение периметра атаки ядра",
+      "ru": [
+        "периметр атаки",
+        "kexec_load",
+        "debugfs",
+        "perf_event_paranoid",
+        "userfaultfd",
+        "ldisc_autoload",
+        "mmap_min_addr"
+      ],
+      "en": [
+        "attack surface",
+        "kexec",
+        "debugfs",
+        "perf_event_paranoid",
+        "userfaultfd",
+        "mmap_min_addr"
+      ],
+      "themes": [
+        "Параметры ядра"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, Рекомендации по настройке ОС Linux (2022)",
+          "ref": "2.5.1",
+          "verify": false
+        }
+      ]
+    },
+    {
+      "id": "network.ip_forward",
+      "title": "Запрет транзитной передачи пакетов",
+      "ru": [
+        "переадресация",
+        "ip_forward",
+        "маршрутизация пакетов",
+        "транзитный трафик"
+      ],
+      "en": [
+        "ip forwarding",
+        "packet forwarding",
+        "routing"
+      ],
+      "themes": [
+        "Сетевые параметры"
+      ],
+      "doc_hints": [
+        {
+          "family": "CIS Benchmark, раздел сетевых параметров",
+          "ref": "Network Parameters",
+          "verify": true
+        },
+        {
+          "family": "ФСТЭК, приказ №17",
+          "ref": "ЗИС",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "network.icmp_redirects",
+      "title": "Запрет ICMP-перенаправлений",
+      "ru": [
+        "icmp",
+        "перенаправлений",
+        "accept_redirects",
+        "send_redirects"
+      ],
+      "en": [
+        "icmp redirects",
+        "accept_redirects",
+        "send_redirects"
+      ],
+      "themes": [
+        "Сетевые параметры"
+      ],
+      "doc_hints": [
+        {
+          "family": "CIS Benchmark, раздел сетевых параметров",
+          "ref": "Network Parameters",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "network.spoof_protection",
+      "title": "Защита от подмены адреса источника",
+      "ru": [
+        "подмена адреса",
+        "rp_filter",
+        "обратного пути",
+        "spoofing"
+      ],
+      "en": [
+        "source address spoofing",
+        "reverse path filter",
+        "rp_filter"
+      ],
+      "themes": [
+        "Сетевые параметры"
+      ],
+      "doc_hints": [
+        {
+          "family": "CIS Benchmark, раздел сетевых параметров",
+          "ref": "Network Parameters",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "network.insecure_services",
+      "title": "Запрет незащищённых сетевых служб",
+      "ru": [
+        "telnet",
+        "ftp",
+        "rsh",
+        "открытых портов",
+        "незащищённый протокол",
+        "открытом виде"
+      ],
+      "en": [
+        "telnet",
+        "ftp",
+        "rsh",
+        "insecure services",
+        "cleartext protocol",
+        "unencrypted"
+      ],
+      "themes": [
+        "Сетевые службы"
+      ],
+      "doc_hints": [
+        {
+          "family": "CIS Benchmark, раздел сетевых служб",
+          "ref": "Special Purpose Services",
+          "verify": true
+        },
+        {
+          "family": "ФСТЭК, приказ №17",
+          "ref": "ЗИС",
+          "verify": true
+        },
+        {
+          "family": "PCI DSS, защита передаваемых данных",
+          "ref": "4.1",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "audit.subsystem_installed",
+      "title": "Наличие подсистемы аудита",
+      "ru": [
+        "подсистема аудита",
+        "auditd",
+        "регистрация событий",
+        "журналирование событий"
+      ],
+      "en": [
+        "audit subsystem",
+        "auditd",
+        "audit daemon",
+        "event logging"
+      ],
+      "themes": [
+        "Регистрация событий"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, приказ №17",
+          "ref": "РСБ.1",
+          "verify": true
+        },
+        {
+          "family": "ГОСТ Р 57580.1, регистрация событий",
+          "ref": "РЗН",
+          "verify": true
+        },
+        {
+          "family": "CIS Benchmark, раздел аудита",
+          "ref": "Configure System Accounting",
+          "verify": true
+        },
+        {
+          "family": "NIST SP 800-53",
+          "ref": "AU-2",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "audit.service_running",
+      "title": "Работа подсистемы аудита",
+      "ru": [
+        "служба аудита",
+        "запущена",
+        "активна",
+        "auditd.service"
+      ],
+      "en": [
+        "audit service",
+        "auditd enabled",
+        "service running"
+      ],
+      "themes": [
+        "Регистрация событий"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, приказ №17",
+          "ref": "РСБ",
+          "verify": true
+        },
+        {
+          "family": "NIST SP 800-53",
+          "ref": "AU-12",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "audit.log_protection",
+      "title": "Защита журналов от изменения",
+      "ru": [
+        "защита журналов",
+        "изменение журналов",
+        "целостность журналов",
+        "хранение журналов"
+      ],
+      "en": [
+        "log protection",
+        "log integrity",
+        "audit log retention"
+      ],
+      "themes": [
+        "Регистрация событий"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, приказ №17",
+          "ref": "РСБ.3",
+          "verify": true
+        },
+        {
+          "family": "NIST SP 800-53",
+          "ref": "AU-9",
+          "verify": true
+        },
+        {
+          "family": "ISO/IEC 27002, журналирование",
+          "ref": "8.15",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "fs.mount_options",
+      "title": "Параметры монтирования разделов",
+      "ru": [
+        "параметры монтирования",
+        "nodev",
+        "nosuid",
+        "noexec",
+        "/tmp",
+        "разделов"
+      ],
+      "en": [
+        "mount options",
+        "nodev",
+        "nosuid",
+        "noexec",
+        "partition"
+      ],
+      "themes": [
+        "Файловые системы"
+      ],
+      "doc_hints": [
+        {
+          "family": "CIS Benchmark, раздел файловых систем",
+          "ref": "Filesystem Configuration",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "org.access_procedure",
+      "title": "Порядок управления доступом",
+      "ru": [
+        "порядок предоставления",
+        "пересмотр прав доступа",
+        "матрица доступа",
+        "ответственные",
+        "регламент"
+      ],
+      "en": [
+        "access control procedure",
+        "access review",
+        "authorization process"
+      ],
+      "themes": [
+        "Организационные меры"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, приказ №17",
+          "ref": "УПД.1",
+          "verify": true
+        },
+        {
+          "family": "ISO/IEC 27002, управление доступом",
+          "ref": "5.15",
+          "verify": true
+        },
+        {
+          "family": "NIST SP 800-53",
+          "ref": "AC-1",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "org.awareness",
+      "title": "Обучение и информирование персонала",
+      "ru": [
+        "обучение",
+        "инструктаж",
+        "осведомлённость",
+        "информирование персонала"
+      ],
+      "en": [
+        "security awareness",
+        "training",
+        "personnel briefing"
+      ],
+      "themes": [
+        "Организационные меры"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, приказ №17",
+          "ref": "ОПС",
+          "verify": true
+        },
+        {
+          "family": "ISO/IEC 27002, осведомлённость",
+          "ref": "6.3",
+          "verify": true
+        },
+        {
+          "family": "NIST SP 800-53",
+          "ref": "AT-2",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "org.backup",
+      "title": "Резервное копирование",
+      "ru": [
+        "резервное копирование",
+        "резервных копий",
+        "восстановление данных"
+      ],
+      "en": [
+        "backup",
+        "data recovery",
+        "restore"
+      ],
+      "themes": [
+        "Организационные меры"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, приказ №17",
+          "ref": "ОДТ",
+          "verify": true
+        },
+        {
+          "family": "ISO/IEC 27002, резервное копирование",
+          "ref": "8.13",
+          "verify": true
+        }
+      ]
+    },
+    {
+      "id": "org.vulnerability_management",
+      "title": "Управление уязвимостями и обновлениями",
+      "ru": [
+        "управление уязвимостями",
+        "обновления безопасности",
+        "устранение уязвимостей",
+        "патчи"
+      ],
+      "en": [
+        "vulnerability management",
+        "patch management",
+        "security updates"
+      ],
+      "themes": [
+        "Организационные меры"
+      ],
+      "doc_hints": [
+        {
+          "family": "ФСТЭК, приказ №17",
+          "ref": "АНЗ.1",
+          "verify": true
+        },
+        {
+          "family": "NIST SP 800-53",
+          "ref": "RA-5",
+          "verify": true
+        },
+        {
+          "family": "PCI DSS, управление уязвимостями",
+          "ref": "6.3",
+          "verify": true
+        }
+      ]
+    }
+  ],
+  "catalog_links": {
+    "ssh.permit_root_login": [
+      "access.ssh_root_login"
+    ],
+    "ssh.permit_empty_passwords": [
+      "access.ssh_empty_password"
+    ],
+    "ssh.max_auth_tries": [
+      "access.ssh_auth_attempts"
+    ],
+    "ssh.x11_forwarding": [
+      "access.ssh_root_login"
+    ],
+    "password.minlen": [
+      "password.length"
+    ],
+    "password.max_days": [
+      "password.max_age"
+    ],
+    "password.min_days": [
+      "password.min_age"
+    ],
+    "sysctl.ip_forward": [
+      "network.ip_forward"
+    ],
+    "sysctl.accept_redirects": [
+      "network.icmp_redirects"
+    ],
+    "sysctl.send_redirects": [
+      "network.icmp_redirects"
+    ],
+    "sysctl.rp_filter": [
+      "network.spoof_protection"
+    ],
+    "sysctl.aslr": [
+      "kernel.aslr"
+    ],
+    "file.passwd_owner": [
+      "files.passwd_group_perms"
+    ],
+    "file.shadow_not_world_readable": [
+      "files.shadow_perms"
+    ],
+    "file.crontab_owner": [
+      "files.cron_perms"
+    ],
+    "audit.package_installed": [
+      "audit.subsystem_installed"
+    ],
+    "password.history": [
+      "password.history"
+    ],
+    "audit.service_active": [
+      "audit.service_running"
+    ],
+    "net.telnet_port_closed": [
+      "network.insecure_services"
+    ],
+    "mount.tmp_nodev": [
+      "fs.mount_options"
+    ],
+    "org.access_control_procedure": [
+      "org.access_procedure"
+    ],
+    "org.security_awareness": [
+      "org.awareness"
+    ],
+    "fstec.2_1_2": [
+      "access.ssh_root_login"
+    ],
+    "fstec.2_1_1": [
+      "access.ssh_empty_password"
+    ],
+    "fstec.2_2_1": [
+      "privilege.su_restriction"
+    ],
+    "fstec.2_2_2": [
+      "privilege.sudo_review"
+    ],
+    "fstec.2_3_1a": [
+      "files.passwd_group_perms"
+    ],
+    "fstec.2_3_1b": [
+      "files.passwd_group_perms"
+    ],
+    "fstec.2_3_1c": [
+      "files.shadow_perms"
+    ],
+    "fstec.2_3_5": [
+      "files.startup_scripts"
+    ],
+    "fstec.2_3_6": [
+      "files.cron_perms"
+    ],
+    "fstec.2_3_8": [
+      "files.system_binaries"
+    ],
+    "fstec.2_3_9": [
+      "privilege.suid_audit"
+    ],
+    "fstec.2_3_10": [
+      "files.home_dir_perms"
+    ],
+    "fstec.2_3_11": [
+      "files.home_dir_perms"
+    ],
+    "fstec.2_4_1": [
+      "kernel.dmesg_restrict"
+    ],
+    "fstec.2_4_2": [
+      "kernel.kptr_restrict"
+    ],
+    "fstec.2_4_8": [
+      "kernel.bpf_restrict"
+    ],
+    "fstec.2_5_6": [
+      "kernel.bpf_restrict"
+    ],
+    "fstec.2_5_5": [
+      "kernel.user_namespaces"
+    ],
+    "fstec.2_5_11": [
+      "kernel.aslr"
+    ],
+    "fstec.2_6_1": [
+      "kernel.ptrace_scope"
+    ],
+    "fstec.2_6_2": [
+      "kernel.fs_protections"
+    ],
+    "fstec.2_6_3": [
+      "kernel.fs_protections"
+    ],
+    "fstec.2_6_4": [
+      "kernel.fs_protections"
+    ],
+    "fstec.2_6_5": [
+      "kernel.fs_protections"
+    ],
+    "fstec.2_6_6": [
+      "kernel.core_dump"
+    ],
+    "fstec.2_4_3": [
+      "kernel.boot_hardening"
+    ],
+    "fstec.2_4_4": [
+      "kernel.boot_hardening"
+    ],
+    "fstec.2_4_5a": [
+      "kernel.boot_hardening"
+    ],
+    "fstec.2_4_5b": [
+      "kernel.boot_hardening"
+    ],
+    "fstec.2_4_5c": [
+      "kernel.boot_hardening"
+    ],
+    "fstec.2_4_6": [
+      "kernel.boot_hardening"
+    ],
+    "fstec.2_4_7": [
+      "kernel.boot_hardening"
+    ],
+    "fstec.2_5_1": [
+      "kernel.attack_surface"
+    ],
+    "fstec.2_5_2": [
+      "kernel.attack_surface"
+    ],
+    "fstec.2_5_3": [
+      "kernel.attack_surface"
+    ],
+    "fstec.2_5_4": [
+      "kernel.attack_surface"
+    ],
+    "fstec.2_5_7": [
+      "kernel.attack_surface"
+    ],
+    "fstec.2_5_8": [
+      "kernel.attack_surface"
+    ],
+    "fstec.2_5_9": [
+      "kernel.boot_hardening"
+    ],
+    "fstec.2_5_10": [
+      "kernel.attack_surface"
+    ],
+    "fstec.2_3_2": [
+      "files.system_binaries"
+    ],
+    "fstec.2_3_3": [
+      "files.cron_perms"
+    ],
+    "fstec.2_3_4": [
+      "privilege.sudo_review"
+    ],
+    "fstec.2_3_7": [
+      "files.cron_perms"
+    ]
+  }
+}

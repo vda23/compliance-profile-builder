@@ -14,7 +14,7 @@ POST/PUT) разобранное тело запроса. Таблица ROUTES 
 """
 import re
 
-from . import storage, xccdf_xml, oval_xml, validation, export_zip
+from . import catalog, docimport, knowledge, storage, xccdf_xml, oval_xml, validation, export_zip
 from .oval_registry import TEST_TYPES, allowed_test_types
 from .i18n_labels import all_labels, all_labels_en, ui_field_labels
 from . import schemas as S
@@ -212,6 +212,12 @@ def add_test(project_id, filename, body):
                 b.object_ref, b.state_ref, b.check, b.check_existence, b.comment)
 
 
+def update_test(project_id, filename, test_id, body):
+    b = S.parse("TestCreate", body)
+    return _run(oval_xml.update_test, project_id, filename, test_id, b.test_type,
+                b.version, b.object_ref, b.state_ref, b.check, b.check_existence, b.comment)
+
+
 def delete_test(project_id, filename, test_id):
     return _run(oval_xml.delete_test, project_id, filename, test_id)
 
@@ -219,6 +225,12 @@ def delete_test(project_id, filename, test_id):
 def add_object(project_id, filename, body):
     b = S.parse("ObjectCreate", body)
     return _run(oval_xml.add_object, project_id, filename, b.test_type, b.id,
+                b.version, b.fields, b.comment)
+
+
+def update_object(project_id, filename, obj_id, body):
+    b = S.parse("ObjectCreate", body)
+    return _run(oval_xml.update_object, project_id, filename, obj_id, b.test_type,
                 b.version, b.fields, b.comment)
 
 
@@ -232,6 +244,12 @@ def add_state(project_id, filename, body):
                 b.version, b.fields, b.comment)
 
 
+def update_state(project_id, filename, ste_id, body):
+    b = S.parse("StateCreate", body)
+    return _run(oval_xml.update_state, project_id, filename, ste_id, b.test_type,
+                b.version, b.fields, b.comment)
+
+
 def delete_state(project_id, filename, ste_id):
     return _run(oval_xml.delete_state, project_id, filename, ste_id)
 
@@ -239,6 +257,12 @@ def delete_state(project_id, filename, ste_id):
 def add_variable(project_id, filename, body):
     b = S.parse("VariableCreate", body)
     return _run(oval_xml.add_variable, project_id, filename, b.id, b.version,
+                b.datatype, b.value, b.comment)
+
+
+def update_variable(project_id, filename, var_id, body):
+    b = S.parse("VariableCreate", body)
+    return _run(oval_xml.update_variable, project_id, filename, var_id, b.version,
                 b.datatype, b.value, b.comment)
 
 
@@ -269,6 +293,91 @@ def import_project(query, raw_body):
     return _run(export_zip.import_zip, project_id, raw_body)
 
 
+# ------------------------------------------- каталог проверок и база знаний
+
+def get_catalog(query=None, raw_body=None):
+    """Записи каталога типовых проверок; ?os=... сужает список до
+    применимых к конкретной системе."""
+    os_name = (query or {}).get("os", [None])[0]
+    entries = catalog.entries_for_os(os_name) if os_name else catalog.load_catalog()
+    return {
+        "categories": catalog.categories(),
+        "entries": [{
+            "id": e.get("id"), "title": e.get("title"), "category": e.get("category"),
+            "description": e.get("description"), "manual": bool(e.get("manual")),
+            "pack": e.get("pack"), "params": e.get("params", []),
+            "refs": e.get("refs", []), "remediation": e.get("remediation"),
+        } for e in entries],
+    }
+
+
+def get_knowledge(query=None, raw_body=None):
+    """Состав базы знаний: темы требований и семейства документов."""
+    return {
+        "families": knowledge.document_families(),
+        "concepts": [{"id": c["id"], "title": c.get("title"),
+                      "themes": c.get("themes", []),
+                      "ru": c.get("ru", []), "en": c.get("en", []),
+                      "doc_hints": c.get("doc_hints", []),
+                      "checks": [eid for eid, cids in knowledge.catalog_links().items() if c["id"] in cids]}
+                     for c in knowledge.load_concepts()],
+        "synonyms": knowledge.synonym_pairs(),
+    }
+
+
+# ------------------------------------------ загрузка нормативного документа
+
+def analyze_document(query, raw_body):
+    """Разбор документа без создания проекта: пункты, темы требований и
+    кандидаты проверок. Позволяет посмотреть, что получится, до сборки."""
+    filename = (query.get("filename") or [""])[0]
+    os_name = (query.get("os") or [None])[0]
+    pack = (query.get("pack") or [None])[0]
+    if not raw_body:
+        raise ApiError(400, "Документ не передан.")
+    try:
+        paragraphs = docimport.read_document_bytes(raw_body, filename)
+    except docimport.ImportError_ as e:
+        raise ApiError(400, str(e))
+    items = docimport.extract_items(paragraphs)
+    if not items:
+        raise ApiError(400, "В документе не найдено пронумерованных пунктов. "
+                            "Проверьте, что требования оформлены нумерованным списком (1.1, 1.2 и так далее).")
+    matches = docimport.match_items(items, os_name=os_name, pack=pack)
+    return {
+        "disclaimer": docimport.DISCLAIMER,
+        "filename": filename,
+        "items_total": len(items),
+        "matches": matches,
+    }
+
+
+def draft_from_document(query, raw_body):
+    """Разбор документа и сборка чернового профиля."""
+    filename = (query.get("filename") or [""])[0]
+    project_id = (query.get("project_id") or [""])[0]
+    os_name = (query.get("os") or [None])[0]
+    pack = (query.get("pack") or [None])[0]
+    title = (query.get("title") or [filename or "Загруженный документ"])[0]
+    min_conf = (query.get("min_confidence") or ["средняя"])[0]
+    if not project_id:
+        raise ApiError(400, "Не указан идентификатор проекта (project_id).")
+    if storage.project_exists(project_id):
+        raise ApiError(400, "Проект '%s' уже существует. Укажите другой идентификатор." % project_id)
+    if not raw_body:
+        raise ApiError(400, "Документ не передан.")
+    try:
+        paragraphs = docimport.read_document_bytes(raw_body, filename)
+    except docimport.ImportError_ as e:
+        raise ApiError(400, str(e))
+    items = docimport.extract_items(paragraphs)
+    if not items:
+        raise ApiError(400, "В документе не найдено пронумерованных пунктов.")
+    matches = docimport.match_items(items, os_name=os_name, pack=pack)
+    return _run(docimport.build_draft, project_id, matches, title,
+                os_name=os_name, min_confidence=min_conf)
+
+
 # ------------------------------------------------------------ таблица маршрутов
 
 _SEG = r"([^/]+)"
@@ -282,6 +391,10 @@ def _route(method, pattern, handler, kind="json"):
 
 ROUTES = [
     _route("GET", "/oval-type-schemas", get_oval_type_schemas, "none"),
+    _route("GET", "/catalog", get_catalog, "raw"),
+    _route("GET", "/knowledge", get_knowledge, "raw"),
+    _route("POST", "/documents/analyze", analyze_document, "raw"),
+    _route("POST", "/documents/draft", draft_from_document, "raw"),
     _route("GET", "/projects", list_projects, "none"),
     _route("POST", "/projects/import", import_project, "raw"),
     _route("POST", "/projects", create_project),
@@ -302,12 +415,16 @@ ROUTES = [
     _route("PUT", "/projects/{p}/oval-files/{f}/definitions/{x}", update_definition),
     _route("DELETE", "/projects/{p}/oval-files/{f}/definitions/{x}", delete_definition, "none"),
     _route("POST", "/projects/{p}/oval-files/{f}/tests", add_test),
+    _route("PUT", "/projects/{p}/oval-files/{f}/tests/{x}", update_test),
     _route("DELETE", "/projects/{p}/oval-files/{f}/tests/{x}", delete_test, "none"),
     _route("POST", "/projects/{p}/oval-files/{f}/objects", add_object),
+    _route("PUT", "/projects/{p}/oval-files/{f}/objects/{x}", update_object),
     _route("DELETE", "/projects/{p}/oval-files/{f}/objects/{x}", delete_object, "none"),
     _route("POST", "/projects/{p}/oval-files/{f}/states", add_state),
+    _route("PUT", "/projects/{p}/oval-files/{f}/states/{x}", update_state),
     _route("DELETE", "/projects/{p}/oval-files/{f}/states/{x}", delete_state, "none"),
     _route("POST", "/projects/{p}/oval-files/{f}/variables", add_variable),
+    _route("PUT", "/projects/{p}/oval-files/{f}/variables/{x}", update_variable),
     _route("DELETE", "/projects/{p}/oval-files/{f}/variables/{x}", delete_variable, "none"),
     _route("GET", "/projects/{p}/oval-files/{f}", get_oval_file, "none"),
     _route("DELETE", "/projects/{p}/oval-files/{f}", delete_oval_file, "none"),

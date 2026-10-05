@@ -1,0 +1,2062 @@
+{
+  "pack": "fstec-linux-2022",
+  "title": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+  "description": "Пакет составлен по тексту Рекомендаций, утверждённых ФСТЭК России 25 декабря 2022 г. Номера пунктов проставлены в поле refs и попадают в идентификатор требования правила. Записи с manual=true требованиями не проверяются автоматически — они выносятся в отчёт о покрытии.",
+  "source": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+  "checks": [
+    {
+      "id": "fstec.2_4_1",
+      "title": "Ограничение доступа к журналу ядра",
+      "description": "Проверяется, что параметр ядра kernel.dmesg_restrict имеет значение 1.",
+      "rationale": "Журнал ядра раскрывает адреса и внутреннее устройство системы, что упрощает подготовку атаки. Доступ ограничивается администраторами.",
+      "category": "Параметры ядра",
+      "keywords": [
+        "ядро",
+        "sysctl",
+        "kernel.dmesg_restrict",
+        "dmesg restrict"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.4.1"
+        }
+      ],
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "1",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "unix:sysctl_test",
+        "object": {
+          "name": "kernel.dmesg_restrict"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать kernel.dmesg_restrict = 1 в /etc/sysctl.d/ и применить sysctl -p."
+    },
+    {
+      "id": "fstec.2_4_2",
+      "title": "Скрытие адресов ядра в /proc",
+      "description": "Проверяется, что параметр ядра kernel.kptr_restrict имеет значение 2.",
+      "rationale": "Раскрытые адреса ядра снимают защиту рандомизации памяти и облегчают эксплуатацию уязвимостей.",
+      "category": "Параметры ядра",
+      "keywords": [
+        "ядро",
+        "sysctl",
+        "kernel.kptr_restrict",
+        "kptr restrict"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.4.2"
+        }
+      ],
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "2",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "unix:sysctl_test",
+        "object": {
+          "name": "kernel.kptr_restrict"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать kernel.kptr_restrict = 2 в /etc/sysctl.d/ и применить sysctl -p."
+    },
+    {
+      "id": "fstec.2_4_8",
+      "title": "Защита подсистемы eBPF JIT",
+      "description": "Проверяется, что параметр ядра net.core.bpf_jit_harden имеет значение 2.",
+      "rationale": "Усиление JIT-компиляции eBPF затрудняет атаки через подсистему фильтрации пакетов.",
+      "category": "Параметры ядра",
+      "keywords": [
+        "ядро",
+        "sysctl",
+        "net.core.bpf_jit_harden",
+        "bpf jit harden"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.4.8"
+        }
+      ],
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "2",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "unix:sysctl_test",
+        "object": {
+          "name": "net.core.bpf_jit_harden"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать net.core.bpf_jit_harden = 2 в /etc/sysctl.d/ и применить sysctl -p."
+    },
+    {
+      "id": "fstec.2_5_2",
+      "title": "Ограничение доступа к событиям производительности",
+      "description": "Проверяется, что параметр ядра kernel.perf_event_paranoid имеет значение 3.",
+      "rationale": "Подсистема perf позволяет непривилегированному пользователю наблюдать за работой чужих процессов.",
+      "category": "Параметры ядра",
+      "keywords": [
+        "ядро",
+        "sysctl",
+        "kernel.perf_event_paranoid",
+        "perf event paranoid"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.5.2"
+        }
+      ],
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "3",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "unix:sysctl_test",
+        "object": {
+          "name": "kernel.perf_event_paranoid"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать kernel.perf_event_paranoid = 3 в /etc/sysctl.d/ и применить sysctl -p."
+    },
+    {
+      "id": "fstec.2_5_4",
+      "title": "Отключение системного вызова kexec_load",
+      "description": "Проверяется, что параметр ядра kernel.kexec_load_disabled имеет значение 1.",
+      "rationale": "Вызов позволяет загрузить другое ядро в обход штатной загрузки и проверки подписи.",
+      "category": "Параметры ядра",
+      "keywords": [
+        "ядро",
+        "sysctl",
+        "kernel.kexec_load_disabled",
+        "kexec load disabled"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.5.4"
+        }
+      ],
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "1",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "unix:sysctl_test",
+        "object": {
+          "name": "kernel.kexec_load_disabled"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать kernel.kexec_load_disabled = 1 в /etc/sysctl.d/ и применить sysctl -p."
+    },
+    {
+      "id": "fstec.2_5_5",
+      "title": "Ограничение использования user namespaces",
+      "description": "Проверяется, что параметр ядра user.max_user_namespaces имеет значение 0.",
+      "rationale": "Пространства имён пользователей исторически служат источником уязвимостей повышения привилегий.",
+      "category": "Параметры ядра",
+      "keywords": [
+        "ядро",
+        "sysctl",
+        "user.max_user_namespaces",
+        "max user namespaces"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.5.5"
+        }
+      ],
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "0",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "unix:sysctl_test",
+        "object": {
+          "name": "user.max_user_namespaces"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать user.max_user_namespaces = 0 в /etc/sysctl.d/ и применить sysctl -p."
+    },
+    {
+      "id": "fstec.2_5_6",
+      "title": "Запрет вызова bpf для непривилегированных пользователей",
+      "description": "Проверяется, что параметр ядра kernel.unprivileged_bpf_disabled имеет значение 1.",
+      "rationale": "Доступ к bpf без привилегий расширяет поверхность атаки на ядро.",
+      "category": "Параметры ядра",
+      "keywords": [
+        "ядро",
+        "sysctl",
+        "kernel.unprivileged_bpf_disabled",
+        "unprivileged bpf disabled"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.5.6"
+        }
+      ],
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "1",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "unix:sysctl_test",
+        "object": {
+          "name": "kernel.unprivileged_bpf_disabled"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать kernel.unprivileged_bpf_disabled = 1 в /etc/sysctl.d/ и применить sysctl -p."
+    },
+    {
+      "id": "fstec.2_5_7",
+      "title": "Запрет userfaultfd для непривилегированных пользователей",
+      "description": "Проверяется, что параметр ядра vm.unprivileged_userfaultfd имеет значение 0.",
+      "rationale": "Механизм применяется в приёмах эксплуатации уязвимостей типа use-after-free.",
+      "category": "Параметры ядра",
+      "keywords": [
+        "ядро",
+        "sysctl",
+        "vm.unprivileged_userfaultfd",
+        "unprivileged userfaultfd"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.5.7"
+        }
+      ],
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "0",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "unix:sysctl_test",
+        "object": {
+          "name": "vm.unprivileged_userfaultfd"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать vm.unprivileged_userfaultfd = 0 в /etc/sysctl.d/ и применить sysctl -p."
+    },
+    {
+      "id": "fstec.2_5_8",
+      "title": "Запрет автозагрузки модулей дисциплины линии терминала",
+      "description": "Проверяется, что параметр ядра dev.tty.ldisc_autoload имеет значение 0.",
+      "rationale": "Автоматическая загрузка редких модулей ядра по запросу пользователя увеличивает поверхность атаки.",
+      "category": "Параметры ядра",
+      "keywords": [
+        "ядро",
+        "sysctl",
+        "dev.tty.ldisc_autoload",
+        "ldisc autoload"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.5.8"
+        }
+      ],
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "0",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "unix:sysctl_test",
+        "object": {
+          "name": "dev.tty.ldisc_autoload"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать dev.tty.ldisc_autoload = 0 в /etc/sysctl.d/ и применить sysctl -p."
+    },
+    {
+      "id": "fstec.2_5_10",
+      "title": "Минимальный виртуальный адрес для mmap",
+      "description": "Проверяется, что параметр ядра vm.mmap_min_addr имеет значение 4096.",
+      "rationale": "Запрет отображения нулевых страниц памяти закрывает класс атак на разыменование нулевого указателя.",
+      "category": "Параметры ядра",
+      "keywords": [
+        "ядро",
+        "sysctl",
+        "vm.mmap_min_addr",
+        "mmap min addr"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.5.10"
+        }
+      ],
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "4096",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "unix:sysctl_test",
+        "object": {
+          "name": "vm.mmap_min_addr"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать vm.mmap_min_addr = 4096 в /etc/sysctl.d/ и применить sysctl -p."
+    },
+    {
+      "id": "fstec.2_5_11",
+      "title": "Рандомизация адресного пространства",
+      "description": "Проверяется, что параметр ядра kernel.randomize_va_space имеет значение 2.",
+      "rationale": "Рандомизация размещения областей памяти защищает от атак на переполнение буфера.",
+      "category": "Параметры ядра",
+      "keywords": [
+        "ядро",
+        "sysctl",
+        "kernel.randomize_va_space",
+        "randomize va space"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.5.11"
+        }
+      ],
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "2",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "unix:sysctl_test",
+        "object": {
+          "name": "kernel.randomize_va_space"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать kernel.randomize_va_space = 2 в /etc/sysctl.d/ и применить sysctl -p."
+    },
+    {
+      "id": "fstec.2_6_1",
+      "title": "Запрет подключения к процессам через ptrace",
+      "description": "Проверяется, что параметр ядра kernel.yama.ptrace_scope имеет значение 3.",
+      "rationale": "Отладочный интерфейс позволяет читать память чужих процессов, включая ключи и пароли.",
+      "category": "Параметры ядра",
+      "keywords": [
+        "ядро",
+        "sysctl",
+        "kernel.yama.ptrace_scope",
+        "ptrace scope"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.6.1"
+        }
+      ],
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "3",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "unix:sysctl_test",
+        "object": {
+          "name": "kernel.yama.ptrace_scope"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать kernel.yama.ptrace_scope = 3 в /etc/sysctl.d/ и применить sysctl -p."
+    },
+    {
+      "id": "fstec.2_6_2",
+      "title": "Ограничение перехода по символическим ссылкам",
+      "description": "Проверяется, что параметр ядра fs.protected_symlinks имеет значение 1.",
+      "rationale": "Защищает от подмены символических ссылок в каталогах, доступных на запись всем пользователям.",
+      "category": "Параметры ядра",
+      "keywords": [
+        "ядро",
+        "sysctl",
+        "fs.protected_symlinks",
+        "protected symlinks"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.6.2"
+        }
+      ],
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "1",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "unix:sysctl_test",
+        "object": {
+          "name": "fs.protected_symlinks"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать fs.protected_symlinks = 1 в /etc/sysctl.d/ и применить sysctl -p."
+    },
+    {
+      "id": "fstec.2_6_3",
+      "title": "Ограничение работы с жёсткими ссылками",
+      "description": "Проверяется, что параметр ядра fs.protected_hardlinks имеет значение 1.",
+      "rationale": "Закрывает приём создания жёсткой ссылки на чужой файл для обхода прав доступа.",
+      "category": "Параметры ядра",
+      "keywords": [
+        "ядро",
+        "sysctl",
+        "fs.protected_hardlinks",
+        "protected hardlinks"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.6.3"
+        }
+      ],
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "1",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "unix:sysctl_test",
+        "object": {
+          "name": "fs.protected_hardlinks"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать fs.protected_hardlinks = 1 в /etc/sysctl.d/ и применить sysctl -p."
+    },
+    {
+      "id": "fstec.2_6_4",
+      "title": "Защита от непреднамеренной записи в FIFO-объект",
+      "description": "Проверяется, что параметр ядра fs.protected_fifos имеет значение 2.",
+      "rationale": "Предотвращает подмену именованных каналов в общедоступных каталогах.",
+      "category": "Параметры ядра",
+      "keywords": [
+        "ядро",
+        "sysctl",
+        "fs.protected_fifos",
+        "protected fifos"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.6.4"
+        }
+      ],
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "2",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "unix:sysctl_test",
+        "object": {
+          "name": "fs.protected_fifos"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать fs.protected_fifos = 2 в /etc/sysctl.d/ и применить sysctl -p."
+    },
+    {
+      "id": "fstec.2_6_5",
+      "title": "Защита от непреднамеренной записи в файл",
+      "description": "Проверяется, что параметр ядра fs.protected_regular имеет значение 2.",
+      "rationale": "Предотвращает подмену обычных файлов в каталогах, доступных на запись всем пользователям.",
+      "category": "Параметры ядра",
+      "keywords": [
+        "ядро",
+        "sysctl",
+        "fs.protected_regular",
+        "protected regular"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.6.5"
+        }
+      ],
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "2",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "unix:sysctl_test",
+        "object": {
+          "name": "fs.protected_regular"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать fs.protected_regular = 2 в /etc/sysctl.d/ и применить sysctl -p."
+    },
+    {
+      "id": "fstec.2_6_6",
+      "title": "Запрет создания core dump для SUID-файлов",
+      "description": "Проверяется, что параметр ядра fs.suid_dumpable имеет значение 0.",
+      "rationale": "Дамп памяти привилегированного процесса может содержать чувствительные данные.",
+      "category": "Параметры ядра",
+      "keywords": [
+        "ядро",
+        "sysctl",
+        "fs.suid_dumpable",
+        "suid dumpable"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.6.6"
+        }
+      ],
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "0",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "unix:sysctl_test",
+        "object": {
+          "name": "fs.suid_dumpable"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать fs.suid_dumpable = 0 в /etc/sysctl.d/ и применить sysctl -p."
+    },
+    {
+      "id": "fstec.2_4_3",
+      "title": "Обнуление динамической памяти ядра при выделении",
+      "description": "Проверяется, что в параметрах загрузки ядра задано init_on_alloc=1.",
+      "rationale": "Обнуление выделяемой памяти исключает утечку остаточных данных между процессами.",
+      "category": "Параметры загрузки ядра",
+      "keywords": [
+        "ядро",
+        "параметр загрузки",
+        "cmdline",
+        "init_on_alloc"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.4.3"
+        }
+      ],
+      "params": [],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/proc",
+          "filename": "cmdline",
+          "pattern": "(init_on_alloc=1)"
+        },
+        "state": {},
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Добавить init_on_alloc=1 в параметры загрузки ядра (GRUB_CMDLINE_LINUX в /etc/default/grub) и обновить загрузчик.",
+      "notes": "Проверяется фактическое состояние загруженного ядра через /proc/cmdline. Настройка вступает в силу после перезагрузки."
+    },
+    {
+      "id": "fstec.2_4_4",
+      "title": "Запрет слияния кэшей ядерного аллокатора",
+      "description": "Проверяется, что в параметрах загрузки ядра задано slab_nomerge.",
+      "rationale": "Раздельные кэши затрудняют эксплуатацию уязвимостей повреждения кучи ядра.",
+      "category": "Параметры загрузки ядра",
+      "keywords": [
+        "ядро",
+        "параметр загрузки",
+        "cmdline",
+        "slab_nomerge"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.4.4"
+        }
+      ],
+      "params": [],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/proc",
+          "filename": "cmdline",
+          "pattern": "(slab_nomerge)"
+        },
+        "state": {},
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Добавить slab_nomerge в параметры загрузки ядра (GRUB_CMDLINE_LINUX в /etc/default/grub) и обновить загрузчик.",
+      "notes": "Проверяется фактическое состояние загруженного ядра через /proc/cmdline. Настройка вступает в силу после перезагрузки."
+    },
+    {
+      "id": "fstec.2_4_5a",
+      "title": "Принудительная инициализация механизма IOMMU",
+      "description": "Проверяется, что в параметрах загрузки ядра задано iommu=force.",
+      "rationale": "IOMMU ограничивает прямой доступ устройств к памяти и защищает от атак через периферию.",
+      "category": "Параметры загрузки ядра",
+      "keywords": [
+        "ядро",
+        "параметр загрузки",
+        "cmdline",
+        "iommu"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.4.5"
+        }
+      ],
+      "params": [],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/proc",
+          "filename": "cmdline",
+          "pattern": "(iommu=force)"
+        },
+        "state": {},
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Добавить iommu=force в параметры загрузки ядра (GRUB_CMDLINE_LINUX в /etc/default/grub) и обновить загрузчик.",
+      "notes": "Проверяется фактическое состояние загруженного ядра через /proc/cmdline. Настройка вступает в силу после перезагрузки."
+    },
+    {
+      "id": "fstec.2_4_5b",
+      "title": "Строгий режим IOMMU",
+      "description": "Проверяется, что в параметрах загрузки ядра задано iommu.strict=1.",
+      "rationale": "Строгий режим исключает отложенное освобождение отображений памяти устройств.",
+      "category": "Параметры загрузки ядра",
+      "keywords": [
+        "ядро",
+        "параметр загрузки",
+        "cmdline",
+        "iommu.strict"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.4.5"
+        }
+      ],
+      "params": [],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/proc",
+          "filename": "cmdline",
+          "pattern": "(iommu\\.strict=1)"
+        },
+        "state": {},
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Добавить iommu.strict=1 в параметры загрузки ядра (GRUB_CMDLINE_LINUX в /etc/default/grub) и обновить загрузчик.",
+      "notes": "Проверяется фактическое состояние загруженного ядра через /proc/cmdline. Настройка вступает в силу после перезагрузки."
+    },
+    {
+      "id": "fstec.2_4_5c",
+      "title": "Запрет сквозного режима IOMMU",
+      "description": "Проверяется, что в параметрах загрузки ядра задано iommu.passthrough=0.",
+      "rationale": "Сквозной режим отключает защиту IOMMU для устройств.",
+      "category": "Параметры загрузки ядра",
+      "keywords": [
+        "ядро",
+        "параметр загрузки",
+        "cmdline",
+        "iommu.passthrough"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.4.5"
+        }
+      ],
+      "params": [],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/proc",
+          "filename": "cmdline",
+          "pattern": "(iommu\\.passthrough=0)"
+        },
+        "state": {},
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Добавить iommu.passthrough=0 в параметры загрузки ядра (GRUB_CMDLINE_LINUX в /etc/default/grub) и обновить загрузчик.",
+      "notes": "Проверяется фактическое состояние загруженного ядра через /proc/cmdline. Настройка вступает в силу после перезагрузки."
+    },
+    {
+      "id": "fstec.2_4_6",
+      "title": "Рандомизация расположения ядерного стека",
+      "description": "Проверяется, что в параметрах загрузки ядра задано randomize_kstack_offset=1.",
+      "rationale": "Рандомизация смещения стека ядра затрудняет построение эксплойтов.",
+      "category": "Параметры загрузки ядра",
+      "keywords": [
+        "ядро",
+        "параметр загрузки",
+        "cmdline",
+        "randomize_kstack_offset"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.4.6"
+        }
+      ],
+      "params": [],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/proc",
+          "filename": "cmdline",
+          "pattern": "(randomize_kstack_offset=1)"
+        },
+        "state": {},
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Добавить randomize_kstack_offset=1 в параметры загрузки ядра (GRUB_CMDLINE_LINUX в /etc/default/grub) и обновить загрузчик.",
+      "notes": "Проверяется фактическое состояние загруженного ядра через /proc/cmdline. Настройка вступает в силу после перезагрузки."
+    },
+    {
+      "id": "fstec.2_4_7",
+      "title": "Защита от аппаратных уязвимостей процессора",
+      "description": "Проверяется, что в параметрах загрузки ядра задано mitigations=auto,nosmt.",
+      "rationale": "Включает штатные меры против уязвимостей класса Spectre/Meltdown, включая отключение SMT.",
+      "category": "Параметры загрузки ядра",
+      "keywords": [
+        "ядро",
+        "параметр загрузки",
+        "cmdline",
+        "mitigations"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.4.7"
+        }
+      ],
+      "params": [],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/proc",
+          "filename": "cmdline",
+          "pattern": "(mitigations=auto,nosmt)"
+        },
+        "state": {},
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Добавить mitigations=auto,nosmt в параметры загрузки ядра (GRUB_CMDLINE_LINUX в /etc/default/grub) и обновить загрузчик.",
+      "notes": "Проверяется фактическое состояние загруженного ядра через /proc/cmdline. Настройка вступает в силу после перезагрузки."
+    },
+    {
+      "id": "fstec.2_5_1",
+      "title": "Отключение устаревшего интерфейса vsyscall",
+      "description": "Проверяется, что в параметрах загрузки ядра задано vsyscall=none.",
+      "rationale": "Устаревший интерфейс с фиксированным адресом используется для обхода рандомизации памяти.",
+      "category": "Параметры загрузки ядра",
+      "keywords": [
+        "ядро",
+        "параметр загрузки",
+        "cmdline",
+        "vsyscall"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.5.1"
+        }
+      ],
+      "params": [],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/proc",
+          "filename": "cmdline",
+          "pattern": "(vsyscall=none)"
+        },
+        "state": {},
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Добавить vsyscall=none в параметры загрузки ядра (GRUB_CMDLINE_LINUX в /etc/default/grub) и обновить загрузчик.",
+      "notes": "Проверяется фактическое состояние загруженного ядра через /proc/cmdline. Настройка вступает в силу после перезагрузки."
+    },
+    {
+      "id": "fstec.2_5_3",
+      "title": "Запрет монтирования файловой системы debugfs",
+      "description": "Проверяется, что в параметрах загрузки ядра задано debugfs=no-mount.",
+      "rationale": "Отладочная файловая система раскрывает внутреннее состояние ядра.",
+      "category": "Параметры загрузки ядра",
+      "keywords": [
+        "ядро",
+        "параметр загрузки",
+        "cmdline",
+        "debugfs"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.5.3"
+        }
+      ],
+      "params": [],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/proc",
+          "filename": "cmdline",
+          "pattern": "(debugfs=no-mount)"
+        },
+        "state": {},
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Добавить debugfs=no-mount в параметры загрузки ядра (GRUB_CMDLINE_LINUX в /etc/default/grub) и обновить загрузчик.",
+      "notes": "Проверяется фактическое состояние загруженного ядра через /proc/cmdline. Настройка вступает в силу после перезагрузки."
+    },
+    {
+      "id": "fstec.2_5_9",
+      "title": "Отключение технологии TSX",
+      "description": "Проверяется, что в параметрах загрузки ядра задано tsx=off.",
+      "rationale": "Технология транзакционной памяти служит вектором ряда аппаратных атак.",
+      "category": "Параметры загрузки ядра",
+      "keywords": [
+        "ядро",
+        "параметр загрузки",
+        "cmdline",
+        "tsx"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.5.9"
+        }
+      ],
+      "params": [],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/proc",
+          "filename": "cmdline",
+          "pattern": "(tsx=off)"
+        },
+        "state": {},
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Добавить tsx=off в параметры загрузки ядра (GRUB_CMDLINE_LINUX в /etc/default/grub) и обновить загрузчик.",
+      "notes": "Проверяется фактическое состояние загруженного ядра через /proc/cmdline. Настройка вступает в силу после перезагрузки."
+    },
+    {
+      "id": "fstec.2_1_2",
+      "title": "Запрет входа суперпользователя по SSH",
+      "description": "Проверяется содержимое файла /etc/ssh/sshd_config.",
+      "rationale": "Прямой вход суперпользователя по сети лишает систему персональной ответственности: в журналах не видно, кто именно выполнял действия.",
+      "category": "Удалённый доступ",
+      "keywords": [
+        "ssh",
+        "root",
+        "суперпользователь",
+        "удалённый доступ",
+        "вход"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.1.2"
+        }
+      ],
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "^no$",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/etc/ssh",
+          "filename": "sshd_config",
+          "pattern": "^[[:space:]]*PermitRootLogin[[:space:]]+([a-zA-Z-]+)"
+        },
+        "state": {
+          "subexpression": {
+            "value": "{{value}}",
+            "operation": "pattern match",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "В /etc/ssh/sshd_config задать PermitRootLogin no и перезапустить sshd."
+    },
+    {
+      "id": "fstec.2_2_1",
+      "title": "Ограничение доступа к команде su",
+      "description": "Проверяется содержимое файла /etc/pam.d/su.",
+      "rationale": "Без ограничения на группу wheel воспользоваться командой su может любой пользователь, знающий пароль суперпользователя.",
+      "category": "Повышение привилегий",
+      "keywords": [
+        "su",
+        "повышение привилегий",
+        "wheel",
+        "pam",
+        "ограничение доступа"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.2.1"
+        }
+      ],
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "^pam_wheel\\.so$",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/etc/pam.d",
+          "filename": "su",
+          "pattern": "^[[:space:]]*auth[[:space:]]+required[[:space:]]+(pam_wheel\\.so)"
+        },
+        "state": {
+          "subexpression": {
+            "value": "{{value}}",
+            "operation": "pattern match",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Добавить в /etc/pam.d/su строку: auth required pam_wheel.so use_uid и задать список группы wheel в /etc/group."
+    },
+    {
+      "id": "fstec.2_3_1a",
+      "title": "Права доступа к файлу /etc/passwd",
+      "description": "Проверяется атрибут owrite файла /etc/passwd.",
+      "rationale": "Возможность изменения перечня учётных записей непривилегированным пользователем ведёт к захвату системы.",
+      "category": "Права на файлы",
+      "keywords": [
+        "права доступа",
+        "passwd",
+        "файловая система",
+        "разграничение доступа"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.3.1"
+        }
+      ],
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "false",
+          "datatype": "boolean"
+        }
+      ],
+      "check": {
+        "type": "unix:file_test",
+        "object": {
+          "path": "/etc",
+          "filename": "passwd"
+        },
+        "state": {
+          "owrite": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "boolean"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Привести права доступа к файлу /etc/passwd в соответствие с рекомендацией."
+    },
+    {
+      "id": "fstec.2_3_1b",
+      "title": "Права доступа к файлу /etc/group",
+      "description": "Проверяется атрибут owrite файла /etc/group.",
+      "rationale": "Изменение перечня групп позволяет пользователю включить себя в привилегированную группу.",
+      "category": "Права на файлы",
+      "keywords": [
+        "права доступа",
+        "group",
+        "файловая система",
+        "разграничение доступа"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.3.1"
+        }
+      ],
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "false",
+          "datatype": "boolean"
+        }
+      ],
+      "check": {
+        "type": "unix:file_test",
+        "object": {
+          "path": "/etc",
+          "filename": "group"
+        },
+        "state": {
+          "owrite": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "boolean"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Привести права доступа к файлу /etc/group в соответствие с рекомендацией."
+    },
+    {
+      "id": "fstec.2_3_1c",
+      "title": "Файл /etc/shadow недоступен прочим пользователям",
+      "description": "Проверяется атрибут oread файла /etc/shadow.",
+      "rationale": "Файл содержит хеши паролей: доступ на чтение позволяет подбирать пароли всех учётных записей в offline-режиме.",
+      "category": "Права на файлы",
+      "keywords": [
+        "права доступа",
+        "shadow",
+        "файловая система",
+        "разграничение доступа"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.3.1"
+        }
+      ],
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "false",
+          "datatype": "boolean"
+        }
+      ],
+      "check": {
+        "type": "unix:file_test",
+        "object": {
+          "path": "/etc",
+          "filename": "shadow"
+        },
+        "state": {
+          "oread": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "boolean"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Привести права доступа к файлу /etc/shadow в соответствие с рекомендацией."
+    },
+    {
+      "id": "fstec.2_3_6",
+      "title": "Права доступа к файлу /etc/crontab",
+      "description": "Проверяется атрибут owrite файла /etc/crontab.",
+      "rationale": "Задания планировщика выполняются с высокими привилегиями, поэтому запись в файл заданий равносильна выполнению произвольного кода.",
+      "category": "Права на файлы",
+      "keywords": [
+        "права доступа",
+        "crontab",
+        "файловая система",
+        "разграничение доступа"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.3.6"
+        }
+      ],
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "false",
+          "datatype": "boolean"
+        }
+      ],
+      "check": {
+        "type": "unix:file_test",
+        "object": {
+          "path": "/etc",
+          "filename": "crontab"
+        },
+        "state": {
+          "owrite": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "boolean"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Привести права доступа к файлу /etc/crontab в соответствие с рекомендацией."
+    },
+    {
+      "id": "fstec.2_1_1",
+      "title": "Учётные записи с пустыми паролями",
+      "description": "Проверяется, что в системе нет учётных записей с пустым паролем: каждый пользователь либо имеет пароль, либо заблокирован по паролю.",
+      "rationale": "Требует перебора всех записей /etc/shadow. Фиксированным объектом OVAL не выражается — нужен обход всех учётных записей.",
+      "category": "Парольная политика",
+      "keywords": [
+        "пустой пароль",
+        "учётные записи",
+        "блокировка",
+        "парольная защита"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.1.1"
+        }
+      ],
+      "manual": true,
+      "remediation": "Проверяется, что в системе нет учётных записей с пустым паролем: каждый пользователь либо имеет пароль, либо заблокирован по паролю.",
+      "notes": "Требует перебора всех записей /etc/shadow. Фиксированным объектом OVAL не выражается — нужен обход всех учётных записей."
+    },
+    {
+      "id": "fstec.2_2_2",
+      "title": "Пересмотр списка пользователей sudo",
+      "description": "Ограничение списка пользователей, которым разрешено использовать sudo, и перечня разрешённых команд.",
+      "rationale": "Требует экспертной оценки содержимого /etc/sudoers: эталонного значения не существует, оно определяется ролевой моделью организации.",
+      "category": "Повышение привилегий",
+      "keywords": [
+        "sudo",
+        "повышение привилегий",
+        "пересмотр прав",
+        "ролевая модель"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.2.2"
+        }
+      ],
+      "manual": true,
+      "remediation": "Ограничение списка пользователей, которым разрешено использовать sudo, и перечня разрешённых команд.",
+      "notes": "Требует экспертной оценки содержимого /etc/sudoers: эталонного значения не существует, оно определяется ролевой моделью организации."
+    },
+    {
+      "id": "fstec.2_3_2",
+      "title": "Права доступа к файлам запущенных процессов",
+      "description": "Установка корректных прав на исполняемые файлы запущенных процессов и соответствующие библиотеки.",
+      "rationale": "Перечень файлов определяется составом запущенных процессов и различается от узла к узлу.",
+      "category": "Права на файлы",
+      "keywords": [
+        "права доступа",
+        "процессы",
+        "исполняемые файлы",
+        "библиотеки"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.3.2"
+        }
+      ],
+      "manual": true,
+      "remediation": "Установка корректных прав на исполняемые файлы запущенных процессов и соответствующие библиотеки.",
+      "notes": "Перечень файлов определяется составом запущенных процессов и различается от узла к узлу."
+    },
+    {
+      "id": "fstec.2_3_3",
+      "title": "Права доступа к файлам заданий cron",
+      "description": "Установка корректных прав на файлы и команды, вызываемые из заданий планировщика.",
+      "rationale": "Перечень файлов определяется содержимым заданий cron конкретного узла.",
+      "category": "Права на файлы",
+      "keywords": [
+        "cron",
+        "планировщик",
+        "права доступа",
+        "выполнение кода"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.3.3"
+        }
+      ],
+      "manual": true,
+      "remediation": "Установка корректных прав на файлы и команды, вызываемые из заданий планировщика.",
+      "notes": "Перечень файлов определяется содержимым заданий cron конкретного узла."
+    },
+    {
+      "id": "fstec.2_3_4",
+      "title": "Права доступа к файлам, выполняемым через sudo",
+      "description": "Установка владельца root и запрет записи прочим пользователям для исполняемых файлов, запускаемых с привилегиями суперпользователя.",
+      "rationale": "Перечень файлов определяется содержимым /etc/sudoers конкретного узла.",
+      "category": "Права на файлы",
+      "keywords": [
+        "sudo",
+        "права доступа",
+        "владелец",
+        "исполняемые файлы"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.3.4"
+        }
+      ],
+      "manual": true,
+      "remediation": "Установка владельца root и запрет записи прочим пользователям для исполняемых файлов, запускаемых с привилегиями суперпользователя.",
+      "notes": "Перечень файлов определяется содержимым /etc/sudoers конкретного узла."
+    },
+    {
+      "id": "fstec.2_3_5",
+      "title": "Права доступа к стартовым скриптам системы",
+      "description": "Запрет записи прочим пользователям для файлов в каталогах /etc/rc#.d и файлов .service.",
+      "rationale": "Требует обхода каталогов по маске. Фиксированным объектом OVAL не выражается.",
+      "category": "Права на файлы",
+      "keywords": [
+        "стартовые скрипты",
+        "systemd",
+        "права доступа",
+        "автозапуск"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.3.5"
+        }
+      ],
+      "manual": true,
+      "remediation": "Запрет записи прочим пользователям для файлов в каталогах /etc/rc#.d и файлов .service.",
+      "notes": "Требует обхода каталогов по маске. Фиксированным объектом OVAL не выражается."
+    },
+    {
+      "id": "fstec.2_3_7",
+      "title": "Права доступа к пользовательским файлам заданий cron",
+      "description": "Запрет записи прочим пользователям для пользовательских файлов заданий планировщика.",
+      "rationale": "Перечень файлов зависит от состава пользователей узла.",
+      "category": "Права на файлы",
+      "keywords": [
+        "cron",
+        "пользовательские задания",
+        "права доступа"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.3.7"
+        }
+      ],
+      "manual": true,
+      "remediation": "Запрет записи прочим пользователям для пользовательских файлов заданий планировщика.",
+      "notes": "Перечень файлов зависит от состава пользователей узла."
+    },
+    {
+      "id": "fstec.2_3_8",
+      "title": "Права доступа к исполняемым файлам и библиотекам системы",
+      "description": "Анализ корректности прав доступа к системным утилитам, библиотекам и модулям ядра.",
+      "rationale": "Требует обхода стандартных каталогов (/bin, /usr/bin, /lib и другие) целиком.",
+      "category": "Права на файлы",
+      "keywords": [
+        "библиотеки",
+        "утилиты",
+        "модули ядра",
+        "права доступа"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.3.8"
+        }
+      ],
+      "manual": true,
+      "remediation": "Анализ корректности прав доступа к системным утилитам, библиотекам и модулям ядра.",
+      "notes": "Требует обхода стандартных каталогов (/bin, /usr/bin, /lib и другие) целиком."
+    },
+    {
+      "id": "fstec.2_3_9",
+      "title": "Аудит SUID/SGID-приложений",
+      "description": "Поиск всех SUID/SGID-приложений, проверка прав доступа к ним и отсутствия лишних.",
+      "rationale": "Требует обхода файловой системы и сверки с «белым списком» организации.",
+      "category": "Права на файлы",
+      "keywords": [
+        "suid",
+        "sgid",
+        "повышение привилегий",
+        "аудит",
+        "белый список"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.3.9"
+        }
+      ],
+      "manual": true,
+      "remediation": "Поиск всех SUID/SGID-приложений, проверка прав доступа к ним и отсутствия лишних.",
+      "notes": "Требует обхода файловой системы и сверки с «белым списком» организации."
+    },
+    {
+      "id": "fstec.2_3_10",
+      "title": "Права доступа к содержимому домашних каталогов",
+      "description": "Установка корректных прав на файлы настройки оболочки и истории команд в домашних каталогах.",
+      "rationale": "Перечень файлов зависит от состава пользователей узла.",
+      "category": "Права на файлы",
+      "keywords": [
+        "домашний каталог",
+        "история команд",
+        "права доступа",
+        "оболочка"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.3.10"
+        }
+      ],
+      "manual": true,
+      "remediation": "Установка корректных прав на файлы настройки оболочки и истории команд в домашних каталогах.",
+      "notes": "Перечень файлов зависит от состава пользователей узла."
+    },
+    {
+      "id": "fstec.2_3_11",
+      "title": "Права доступа к домашним каталогам пользователей",
+      "description": "Установка прав 700 на домашние каталоги пользователей.",
+      "rationale": "Перечень каталогов зависит от состава пользователей узла.",
+      "category": "Права на файлы",
+      "keywords": [
+        "домашний каталог",
+        "права доступа",
+        "разграничение доступа"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "refs": [
+        {
+          "system": "Рекомендации ФСТЭК России по безопасной настройке ОС Linux (2022)",
+          "value": "2.3.11"
+        }
+      ],
+      "manual": true,
+      "remediation": "Установка прав 700 на домашние каталоги пользователей.",
+      "notes": "Перечень каталогов зависит от состава пользователей узла."
+    }
+  ]
+}

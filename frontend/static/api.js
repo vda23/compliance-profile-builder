@@ -26,6 +26,27 @@ const api = {
   put: (path, body) => apiRequest("PUT", path, body),
   del: (path) => apiRequest("DELETE", path),
 
+  async uploadDocument(path, file, params) {
+    // Документ отправляется «как есть», параметры — в строке запроса.
+    // Кириллица в параметрах обязательно кодируется: стандартный
+    // HTTP-сервер отклоняет запросы с не-ASCII в строке запроса.
+    const qs = Object.entries(params || {})
+      .filter(([, v]) => v != null && v !== "")
+      .map(([k, v]) => encodeURIComponent(k) + "=" + encodeURIComponent(v))
+      .join("&");
+    const res = await fetch(API_BASE + path + (qs ? "?" + qs : ""), {
+      method: "POST",
+      headers: { "Content-Type": "application/octet-stream" },
+      body: file,
+    });
+    if (!res.ok) {
+      let detail = res.statusText;
+      try { const data = await res.json(); detail = data.detail || detail; } catch (e) {}
+      throw new Error(detail);
+    }
+    return res.json();
+  },
+
   async importZip(projectId, file) {
     // Архив отправляется «как есть» (application/zip), идентификатор
     // проекта — в строке запроса. Серверу не нужен разбор multipart,
