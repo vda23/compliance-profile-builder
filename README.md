@@ -104,9 +104,12 @@
 
 ## 3. Установка
 
-### Одной командой
+### Двумя командами
+
+Предварительно необходимо скачать архив compliance-profile-builder-v1.0.zip
 
 ```bash
+sudo unzip compliance-profile-builder-v1.0.zip
 sudo bash install.sh
 ```
 
