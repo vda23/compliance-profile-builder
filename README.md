@@ -106,7 +106,7 @@
 
 ### Установка из ZIP
 
-Предварительно необходимо скачать архив compliance-profile-builder-v1.0.0.zip
+Предварительно необходимо скачать архив compliance-profile-builder-v1.0.0.zip из раздела Releases
 
 ```bash
 unzip compliance-profile-builder-v1.0.0.zip
