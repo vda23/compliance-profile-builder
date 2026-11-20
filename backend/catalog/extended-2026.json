@@ -1,0 +1,1837 @@
+{
+  "pack": "extended-2026",
+  "title": "Расширенные проверки (Linux и Windows)",
+  "description": "Дополнительные технические проверки к темам базы знаний и организационные меры по новым группам мер приказа ФСТЭК №117.",
+  "checks": [
+    {
+      "id": "ext.accounts_lockout",
+      "title": "Блокировка учётной записи после неудачных попыток входа",
+      "category": "Парольная политика",
+      "description": "Проверяется содержимое файла /etc/security/faillock.conf.",
+      "rationale": "Блокировка после нескольких неудачных попыток делает подбор пароля практически невозможным.",
+      "keywords": [
+        "блокировка",
+        "faillock",
+        "попытки входа",
+        "подбор пароля"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Допустимые значения (регулярное выражение)",
+          "default": "^[1-5]$",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/etc/security",
+          "filename": "faillock.conf",
+          "pattern": "^[[:space:]]*deny[[:space:]]*=[[:space:]]*([0-9]+)"
+        },
+        "state": {
+          "subexpression": {
+            "value": "{{value}}",
+            "operation": "pattern match",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "В /etc/security/faillock.conf задать deny = 5 (или меньше) и подключить pam_faillock в стеке PAM.",
+      "notes": "Файл faillock.conf поддерживается PAM версии 1.4 и новее. В старых системах параметр deny задаётся в строке pam_faillock.so или pam_tally2.so стека PAM."
+    },
+    {
+      "id": "ext.accounts_inactive",
+      "title": "Блокировка неактивных учётных записей",
+      "category": "Управление доступом",
+      "description": "Проверяется содержимое файла /etc/default/useradd.",
+      "rationale": "Учётная запись, которой давно не пользуются, — удобная цель: её компрометацию никто не заметит.",
+      "keywords": [
+        "неактивные учётные записи",
+        "inactive",
+        "useradd"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Допустимые значения (регулярное выражение)",
+          "default": "^([1-9]|[1-3][0-9]|4[0-5])$",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/etc/default",
+          "filename": "useradd",
+          "pattern": "^[[:space:]]*INACTIVE[[:space:]]*=[[:space:]]*([0-9-]+)"
+        },
+        "state": {
+          "subexpression": {
+            "value": "{{value}}",
+            "operation": "pattern match",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "В /etc/default/useradd задать INACTIVE=45 (или меньше); для существующих — chage --inactive 45 <пользователь>.",
+      "notes": "Параметр применяется к создаваемым учётным записям. Для существующих срок задаётся командой chage."
+    },
+    {
+      "id": "ext.accounts_uid0",
+      "title": "Единственная учётная запись с UID 0",
+      "category": "Управление доступом",
+      "description": "Проверяется содержимое файла /etc/passwd.",
+      "rationale": "Каждая учётная запись с UID 0 обладает полными правами суперпользователя; лишние такие записи — скрытый административный доступ.",
+      "keywords": [
+        "uid 0",
+        "суперпользователь",
+        "passwd"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Допустимые значения (регулярное выражение)",
+          "default": "^root$",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/etc",
+          "filename": "passwd",
+          "pattern": "^([^:]+):[^:]*:0:"
+        },
+        "state": {
+          "subexpression": {
+            "value": "{{value}}",
+            "operation": "pattern match",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Удалить или переназначить UID у всех учётных записей с UID 0, кроме root."
+    },
+    {
+      "id": "ext.password_hashing",
+      "title": "Стойкий алгоритм хеширования паролей",
+      "category": "Парольная политика",
+      "description": "Проверяется содержимое файла /etc/login.defs.",
+      "rationale": "Слабый алгоритм хеширования позволяет быстро подобрать пароли по украденному файлу хешей.",
+      "keywords": [
+        "хеширование паролей",
+        "sha512",
+        "yescrypt",
+        "login.defs"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Допустимые значения (регулярное выражение)",
+          "default": "^(SHA512|YESCRYPT)$",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/etc",
+          "filename": "login.defs",
+          "pattern": "^[[:space:]]*ENCRYPT_METHOD[[:space:]]+([A-Za-z0-9]+)"
+        },
+        "state": {
+          "subexpression": {
+            "value": "{{value}}",
+            "operation": "pattern match",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "В /etc/login.defs задать ENCRYPT_METHOD SHA512 (или YESCRYPT, если поддерживается)."
+    },
+    {
+      "id": "ext.umask",
+      "title": "Права по умолчанию для создаваемых файлов",
+      "category": "Права на файлы",
+      "description": "Проверяется содержимое файла /etc/login.defs.",
+      "rationale": "Маска 022 делает новые файлы пользователей читаемыми всеми; 027 закрывает их от посторонних.",
+      "keywords": [
+        "umask",
+        "права по умолчанию",
+        "login.defs"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Допустимые значения (регулярное выражение)",
+          "default": "^0?(27|77)$",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/etc",
+          "filename": "login.defs",
+          "pattern": "^[[:space:]]*UMASK[[:space:]]+([0-7]+)"
+        },
+        "state": {
+          "subexpression": {
+            "value": "{{value}}",
+            "operation": "pattern match",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "В /etc/login.defs задать UMASK 027."
+    },
+    {
+      "id": "ext.aide_installed",
+      "title": "Средство контроля целостности файлов",
+      "category": "Целостность",
+      "description": "Проверяется, что установлен пакет aide.",
+      "rationale": "Контроль целостности выявляет подмену системных файлов и конфигураций.",
+      "keywords": [
+        "контроль целостности",
+        "aide"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [],
+      "check": {
+        "type": "pkg",
+        "object": {
+          "name": {
+            "deb": "aide",
+            "rpm": "aide"
+          }
+        },
+        "state": {},
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Установить пакет aide, инициализировать базу (aideinit / aide --init) и настроить периодическую проверку.",
+      "notes": "В Astra Linux штатное средство контроля целостности — AFICK; при его использовании проверку стоит заменить на наличие пакета afick."
+    },
+    {
+      "id": "ext.chrony_installed",
+      "title": "Служба синхронизации времени",
+      "category": "Регистрация событий",
+      "description": "Проверяется, что установлен пакет chrony.",
+      "rationale": "Без единого времени события из разных журналов невозможно сопоставить при разборе инцидента.",
+      "keywords": [
+        "синхронизация времени",
+        "chrony",
+        "ntp"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [],
+      "check": {
+        "type": "pkg",
+        "object": {
+          "name": {
+            "deb": "chrony",
+            "rpm": "chrony"
+          }
+        },
+        "state": {},
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Установить chrony и указать в /etc/chrony.conf источник точного времени организации.",
+      "notes": "Если в организации используется systemd-timesyncd или ntpd, проверку стоит заменить на соответствующий пакет."
+    },
+    {
+      "id": "ext.rsyslog_remote",
+      "title": "Передача журналов на централизованный сервер",
+      "category": "Регистрация событий",
+      "description": "Проверяется содержимое файла /etc/rsyslog.conf.",
+      "rationale": "Журналы, хранящиеся только на самом узле, злоумышленник может удалить вместе со следами атаки.",
+      "keywords": [
+        "централизованный сбор",
+        "rsyslog",
+        "siem",
+        "syslog"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/etc",
+          "filename": "rsyslog.conf",
+          "pattern": "^[^#]*(@@?[A-Za-z0-9._-]+|target=\"[A-Za-z0-9._-]+\")"
+        },
+        "state": {},
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Добавить в /etc/rsyslog.conf пересылку на сервер сбора событий, например: *.* @@siem.example.local:514",
+      "notes": "Проверяется основной файл /etc/rsyslog.conf. Если пересылка настроена в /etc/rsyslog.d/, укажите путь к нужному файлу в объекте."
+    },
+    {
+      "id": "ext.ssh_weak_ciphers",
+      "title": "SSH не использует устаревшие алгоритмы шифрования",
+      "category": "Удалённый доступ",
+      "description": "Проверяется содержимое файла /etc/ssh/sshd_config.",
+      "rationale": "Режим CBC, RC4 и 3DES уязвимы; их наличие в списке позволяет понизить стойкость соединения.",
+      "keywords": [
+        "ciphers",
+        "шифрование",
+        "ssh",
+        "cbc"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/etc/ssh",
+          "filename": "sshd_config",
+          "pattern": "^[[:space:]]*Ciphers[[:space:]]+(.*(cbc|arcfour|3des).*)"
+        },
+        "state": {},
+        "check": "all",
+        "check_existence": "none_exist"
+      },
+      "remediation": "Задать в sshd_config список только стойких алгоритмов, например: Ciphers aes256-gcm@openssh.com,chacha20-poly1305@openssh.com,aes256-ctr",
+      "notes": "Проверка от обратного: нарушение — наличие в строке Ciphers устаревшего алгоритма."
+    },
+    {
+      "id": "ext.ssh_banner",
+      "title": "Предупреждение при входе по SSH",
+      "category": "Удалённый доступ",
+      "description": "Проверяется содержимое файла /etc/ssh/sshd_config.",
+      "rationale": "Предупреждение о мониторинге и ответственности — обязательное условие для правового преследования нарушителя во многих юрисдикциях.",
+      "keywords": [
+        "баннер",
+        "предупреждение",
+        "issue.net",
+        "ssh"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Допустимые значения (регулярное выражение)",
+          "default": "^/.+",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/etc/ssh",
+          "filename": "sshd_config",
+          "pattern": "^[[:space:]]*Banner[[:space:]]+([^#[[:space:]]]+)"
+        },
+        "state": {
+          "subexpression": {
+            "value": "{{value}}",
+            "operation": "pattern match",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать Banner /etc/issue.net и разместить в нём текст предупреждения."
+    },
+    {
+      "id": "ext.ssh_login_grace",
+      "title": "Ограничение времени на аутентификацию по SSH",
+      "category": "Удалённый доступ",
+      "description": "Проверяется содержимое файла /etc/ssh/sshd_config.",
+      "rationale": "Долгое ожидание аутентификации позволяет держать множество незавершённых подключений и исчерпать ресурсы сервера.",
+      "keywords": [
+        "logingracetime",
+        "ssh",
+        "тайм-аут"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Допустимые значения (регулярное выражение)",
+          "default": "^([1-9]|[1-5][0-9]|60)$",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/etc/ssh",
+          "filename": "sshd_config",
+          "pattern": "^[[:space:]]*LoginGraceTime[[:space:]]+([0-9]+)"
+        },
+        "state": {
+          "subexpression": {
+            "value": "{{value}}",
+            "operation": "pattern match",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать LoginGraceTime 60 (или меньше) в /etc/ssh/sshd_config."
+    },
+    {
+      "id": "ext.cron_allow",
+      "title": "Доступ к планировщику по списку разрешённых",
+      "category": "Права на файлы",
+      "description": "Проверяется наличие файла /etc/cron.allow.",
+      "rationale": "Без списка разрешённых пользоваться планировщиком может любой пользователь — это способ закрепиться в системе.",
+      "keywords": [
+        "cron.allow",
+        "планировщик",
+        "cron"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [],
+      "check": {
+        "type": "unix:file_test",
+        "object": {
+          "path": "/etc",
+          "filename": "cron.allow"
+        },
+        "state": {},
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Создать /etc/cron.allow со списком пользователей, которым разрешён планировщик (обычно только root), права 600."
+    },
+    {
+      "id": "ext.usb_storage",
+      "title": "Запрет подключения USB-накопителей",
+      "category": "Защита носителей",
+      "description": "Проверяется содержимое файла /etc/modprobe.d/usb-storage.conf.",
+      "rationale": "Съёмные носители — канал утечки данных и занесения вредоносного кода.",
+      "keywords": [
+        "usb",
+        "съёмные носители",
+        "modprobe"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/etc/modprobe.d",
+          "filename": "usb-storage.conf",
+          "pattern": "^[[:space:]]*(install[[:space:]]+usb-storage[[:space:]]+/bin/(true|false)|blacklist[[:space:]]+usb-storage)"
+        },
+        "state": {},
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Создать /etc/modprobe.d/usb-storage.conf со строками: install usb-storage /bin/false и blacklist usb-storage",
+      "notes": "Проверяется файл /etc/modprobe.d/usb-storage.conf. Если запрет задан в другом файле каталога, укажите его имя в объекте."
+    },
+    {
+      "id": "ext.grub_password",
+      "title": "Пароль на изменение параметров загрузчика",
+      "category": "Загрузка системы",
+      "description": "Проверяется содержимое файла {{grubdir}}/grub.cfg.",
+      "rationale": "Без пароля загрузчика любой с физическим доступом может загрузиться в однопользовательский режим и получить права root.",
+      "keywords": [
+        "grub",
+        "загрузчик",
+        "пароль загрузчика"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "grubdir",
+          "title": "Каталог загрузчика",
+          "default": "/boot/grub",
+          "datatype": "string",
+          "default_by_family": {
+            "deb": "/boot/grub",
+            "rpm": "/boot/grub2"
+          }
+        }
+      ],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "{{grubdir}}",
+          "filename": "grub.cfg",
+          "pattern": "^[[:space:]]*password_pbkdf2[[:space:]]+([A-Za-z0-9_.-]+)"
+        },
+        "state": {},
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать пароль: grub-mkpasswd-pbkdf2, добавить set superusers и password_pbkdf2 в /etc/grub.d/40_custom, затем update-grub.",
+      "notes": "Каталог загрузчика: /boot/grub в Debian, Ubuntu, Astra Linux; /boot/grub2 в РЕД ОС, ALT Linux, SberLinux — задаётся параметром."
+    },
+    {
+      "id": "ext.firewall_active",
+      "title": "Межсетевой экран на узле запущен",
+      "category": "Сетевые параметры",
+      "description": "Проверяется, что служба межсетевого экрана активна.",
+      "rationale": "Межсетевой экран на узле ограничивает доступ к сетевым службам и сдерживает распространение атаки внутри сети.",
+      "keywords": [
+        "межсетевой экран",
+        "nftables",
+        "firewalld",
+        "ufw"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "unit",
+          "title": "Служба межсетевого экрана",
+          "default": "nftables.service",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "linux:systemdunitproperty_test",
+        "object": {
+          "unit": "{{unit}}",
+          "property": "ActiveState"
+        },
+        "state": {
+          "value": {
+            "value": "active",
+            "operation": "equals",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Включить и запустить межсетевой экран: systemctl enable --now nftables (или firewalld, ufw).",
+      "notes": "Служба задаётся параметром: nftables.service, firewalld.service или ufw.service — в зависимости от принятого в организации средства."
+    },
+    {
+      "id": "ext.win_smb1",
+      "title": "Отключение клиента SMBv1",
+      "category": "Сетевые службы",
+      "description": "Проверяется параметр реестра HKLM\\SYSTEM\\CurrentControlSet\\Services\\mrxsmb10\\Start.",
+      "rationale": "Протокол SMBv1 устарел и использовался в массовых атаках (WannaCry, NotPetya).",
+      "keywords": [
+        "smbv1",
+        "smb1",
+        "mrxsmb10"
+      ],
+      "platforms": {
+        "family": "windows",
+        "os": [
+          "Windows 10",
+          "Windows 11",
+          "Windows Server 2016",
+          "Windows Server 2019",
+          "Windows Server 2022"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "4",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "windows:registry_test",
+        "object": {
+          "hive": "HKEY_LOCAL_MACHINE",
+          "key": "SYSTEM\\CurrentControlSet\\Services\\mrxsmb10",
+          "name": "Start"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Отключить компонент SMB 1.0/CIFS или задать значение Start = 4 для службы mrxsmb10."
+    },
+    {
+      "id": "ext.win_uac",
+      "title": "Контроль учётных записей (UAC) включён",
+      "category": "Повышение привилегий",
+      "description": "Проверяется параметр реестра HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System\\EnableLUA.",
+      "rationale": "Без UAC любая программа, запущенная администратором, работает с полными правами.",
+      "keywords": [
+        "uac",
+        "enablelua",
+        "контроль учётных записей"
+      ],
+      "platforms": {
+        "family": "windows",
+        "os": [
+          "Windows 10",
+          "Windows 11",
+          "Windows Server 2016",
+          "Windows Server 2019",
+          "Windows Server 2022"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "1",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "windows:registry_test",
+        "object": {
+          "hive": "HKEY_LOCAL_MACHINE",
+          "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+          "name": "EnableLUA"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Включить политику «Контроль учётных записей: все администраторы работают в режиме одобрения»."
+    },
+    {
+      "id": "ext.win_autorun",
+      "title": "Автозапуск отключён для всех типов носителей",
+      "category": "Защита носителей",
+      "description": "Проверяется параметр реестра HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer\\NoDriveTypeAutoRun.",
+      "rationale": "Автозапуск со съёмного носителя — классический способ заражения.",
+      "keywords": [
+        "autorun",
+        "автозапуск"
+      ],
+      "platforms": {
+        "family": "windows",
+        "os": [
+          "Windows 10",
+          "Windows 11",
+          "Windows Server 2016",
+          "Windows Server 2019",
+          "Windows Server 2022"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "255",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "windows:registry_test",
+        "object": {
+          "hive": "HKEY_LOCAL_MACHINE",
+          "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer",
+          "name": "NoDriveTypeAutoRun"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать политику «Отключить автозапуск» для всех дисков (NoDriveTypeAutoRun = 255)."
+    },
+    {
+      "id": "ext.win_lm_hash",
+      "title": "Хеши LAN Manager не хранятся",
+      "category": "Парольная политика",
+      "description": "Проверяется параметр реестра HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa\\NoLMHash.",
+      "rationale": "LM-хеши подбираются за минуты; их хранение сводит на нет требования к сложности паролей.",
+      "keywords": [
+        "lm hash",
+        "nolmhash"
+      ],
+      "platforms": {
+        "family": "windows",
+        "os": [
+          "Windows 10",
+          "Windows 11",
+          "Windows Server 2016",
+          "Windows Server 2019",
+          "Windows Server 2022"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "1",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "windows:registry_test",
+        "object": {
+          "hive": "HKEY_LOCAL_MACHINE",
+          "key": "SYSTEM\\CurrentControlSet\\Control\\Lsa",
+          "name": "NoLMHash"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Включить политику «Сетевая безопасность: не хранить хеш-значения LAN Manager»."
+    },
+    {
+      "id": "ext.win_rdp_nla",
+      "title": "Проверка подлинности на уровне сети для RDP",
+      "category": "Удалённый доступ",
+      "description": "Проверяется параметр реестра HKLM\\SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp\\UserAuthentication.",
+      "rationale": "Без NLA сеанс RDP создаётся до проверки подлинности, что расширяет поверхность атаки на службу.",
+      "keywords": [
+        "rdp",
+        "nla",
+        "удалённый рабочий стол"
+      ],
+      "platforms": {
+        "family": "windows",
+        "os": [
+          "Windows 10",
+          "Windows 11",
+          "Windows Server 2016",
+          "Windows Server 2019",
+          "Windows Server 2022"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "1",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "windows:registry_test",
+        "object": {
+          "hive": "HKEY_LOCAL_MACHINE",
+          "key": "SYSTEM\\CurrentControlSet\\Control\\Terminal Server\\WinStations\\RDP-Tcp",
+          "name": "UserAuthentication"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Включить «Требовать проверку подлинности пользователя на уровне сети» для удалённых подключений."
+    },
+    {
+      "id": "ext.win_ps_logging",
+      "title": "Журналирование блоков сценариев PowerShell",
+      "category": "Регистрация событий",
+      "description": "Проверяется параметр реестра HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\PowerShell\\ScriptBlockLogging\\EnableScriptBlockLogging.",
+      "rationale": "PowerShell — основной инструмент атак без файлов; без журналирования их действия не видны.",
+      "keywords": [
+        "powershell",
+        "журналирование"
+      ],
+      "platforms": {
+        "family": "windows",
+        "os": [
+          "Windows 10",
+          "Windows 11",
+          "Windows Server 2016",
+          "Windows Server 2019",
+          "Windows Server 2022"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "1",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "windows:registry_test",
+        "object": {
+          "hive": "HKEY_LOCAL_MACHINE",
+          "key": "SOFTWARE\\Policies\\Microsoft\\Windows\\PowerShell\\ScriptBlockLogging",
+          "name": "EnableScriptBlockLogging"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Включить политику «Включить ведение журнала блоков сценариев PowerShell»."
+    },
+    {
+      "id": "ext.win_firewall",
+      "title": "Брандмауэр Windows включён (стандартный профиль)",
+      "category": "Сетевые параметры",
+      "description": "Проверяется параметр реестра HKLM\\SYSTEM\\CurrentControlSet\\Services\\SharedAccess\\Parameters\\FirewallPolicy\\StandardProfile\\EnableFirewall.",
+      "rationale": "Брандмауэр на узле ограничивает доступ к сетевым службам и распространение атаки внутри сети.",
+      "keywords": [
+        "брандмауэр",
+        "firewall",
+        "межсетевой экран"
+      ],
+      "platforms": {
+        "family": "windows",
+        "os": [
+          "Windows 10",
+          "Windows 11",
+          "Windows Server 2016",
+          "Windows Server 2019",
+          "Windows Server 2022"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "1",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "windows:registry_test",
+        "object": {
+          "hive": "HKEY_LOCAL_MACHINE",
+          "key": "SYSTEM\\CurrentControlSet\\Services\\SharedAccess\\Parameters\\FirewallPolicy\\StandardProfile",
+          "name": "EnableFirewall"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "equals",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Включить брандмауэр Windows для всех профилей."
+    },
+    {
+      "id": "ext.win_password_length",
+      "title": "Минимальная длина пароля (Windows)",
+      "category": "Парольная политика",
+      "description": "Проверяется, что минимальная длина пароля не меньше заданной.",
+      "rationale": "Короткий пароль подбирается перебором за приемлемое время.",
+      "keywords": [
+        "длина пароля",
+        "парольная политика",
+        "windows"
+      ],
+      "platforms": {
+        "family": "windows",
+        "os": [
+          "Windows 10",
+          "Windows 11",
+          "Windows Server 2016",
+          "Windows Server 2019",
+          "Windows Server 2022"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Минимальная длина",
+          "default": "14",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "windows:passwordpolicy_test",
+        "object": {},
+        "state": {
+          "min_passwd_len": {
+            "value": "{{value}}",
+            "operation": "greater than or equal",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать политику «Минимальная длина пароля» не менее 14 символов."
+    },
+    {
+      "id": "ext.win_password_history",
+      "title": "История паролей (Windows)",
+      "category": "Парольная политика",
+      "description": "Проверяется, что система хранит историю ранее использованных паролей.",
+      "rationale": "Без истории пользователь возвращается к прежнему паролю, и периодическая смена теряет смысл.",
+      "keywords": [
+        "история паролей",
+        "windows"
+      ],
+      "platforms": {
+        "family": "windows",
+        "os": [
+          "Windows 10",
+          "Windows 11",
+          "Windows Server 2016",
+          "Windows Server 2019",
+          "Windows Server 2022"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Глубина истории",
+          "default": "24",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "windows:passwordpolicy_test",
+        "object": {},
+        "state": {
+          "password_hist_len": {
+            "value": "{{value}}",
+            "operation": "greater than or equal",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать политику «Вести журнал паролей» не менее 24."
+    },
+    {
+      "id": "ext.win_audit_logon",
+      "title": "Аудит входа в систему (Windows)",
+      "category": "Регистрация событий",
+      "description": "Проверяется, что регистрируются успешные и неудачные попытки входа.",
+      "rationale": "Без аудита входа попытки подбора пароля и вход под чужой учётной записью остаются незамеченными.",
+      "keywords": [
+        "аудит",
+        "вход в систему",
+        "windows"
+      ],
+      "platforms": {
+        "family": "windows",
+        "os": [
+          "Windows 10",
+          "Windows 11",
+          "Windows Server 2016",
+          "Windows Server 2019",
+          "Windows Server 2022"
+        ]
+      },
+      "params": [],
+      "check": {
+        "type": "windows:auditeventpolicysubcategories_test",
+        "object": {},
+        "state": {
+          "logon": {
+            "value": "AUDIT_SUCCESS_FAILURE",
+            "operation": "equals",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Включить аудит подкатегории «Вход в систему» для успешных и неудачных событий."
+    },
+    {
+      "id": "ext.ssh_client_alive",
+      "title": "Завершение неактивных SSH-сеансов",
+      "category": "Удалённый доступ",
+      "description": "Проверяется содержимое файла /etc/ssh/sshd_config.",
+      "rationale": "Оставленный открытым сеанс администратора позволяет воспользоваться им любому, кто окажется за терминалом.",
+      "keywords": [
+        "clientaliveinterval",
+        "тайм-аут",
+        "неактивный сеанс",
+        "ssh"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Допустимые значения (регулярное выражение)",
+          "default": "^([1-9]|[1-9][0-9]|[1-8][0-9]{2}|900)$",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/etc/ssh",
+          "filename": "sshd_config",
+          "pattern": "^[[:space:]]*ClientAliveInterval[[:space:]]+([0-9]+)"
+        },
+        "state": {
+          "subexpression": {
+            "value": "{{value}}",
+            "operation": "pattern match",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать в /etc/ssh/sshd_config ClientAliveInterval 900 (или меньше) и ClientAliveCountMax 0, перезапустить sshd.",
+      "notes": "Значение 0 отключает проверку активности, поэтому допустимый диапазон — от 1 до 900 секунд."
+    },
+    {
+      "id": "ext.shell_tmout",
+      "title": "Автоматическое завершение неактивной сессии оболочки",
+      "category": "Удалённый доступ",
+      "description": "Проверяется содержимое файла /etc/profile.d/tmout.sh.",
+      "rationale": "Переменная TMOUT завершает бездействующую сессию оболочки — и локальную, и удалённую.",
+      "keywords": [
+        "tmout",
+        "тайм-аут",
+        "бездействие",
+        "оболочка"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Допустимые значения (регулярное выражение)",
+          "default": "^([1-9]|[1-9][0-9]|[1-8][0-9]{2}|900)$",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/etc/profile.d",
+          "filename": "tmout.sh",
+          "pattern": "^[[:space:]]*[a-z ]*TMOUT=([0-9]+)"
+        },
+        "state": {
+          "subexpression": {
+            "value": "{{value}}",
+            "operation": "pattern match",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Создать /etc/profile.d/tmout.sh со строками: readonly TMOUT=900 и export TMOUT",
+      "notes": "Проверяется файл /etc/profile.d/tmout.sh. Если TMOUT задан в другом файле, укажите его в объекте. Значение 0 отключает тайм-аут."
+    },
+    {
+      "id": "ext.password_minclass",
+      "title": "Сложность пароля: символы разных классов",
+      "category": "Парольная политика",
+      "description": "Проверяется содержимое файла /etc/security/pwquality.conf.",
+      "rationale": "Пароль только из букв или только из цифр подбирается в разы быстрее, чем пароль из символов нескольких классов.",
+      "keywords": [
+        "сложность пароля",
+        "minclass",
+        "pwquality",
+        "классы символов"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Допустимые значения (регулярное выражение)",
+          "default": "^[3-4]$",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/etc/security",
+          "filename": "pwquality.conf",
+          "pattern": "^[[:space:]]*minclass[[:space:]]*=[[:space:]]*([0-9]+)"
+        },
+        "state": {
+          "subexpression": {
+            "value": "{{value}}",
+            "operation": "pattern match",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "В /etc/security/pwquality.conf задать minclass = 3 (строчные, прописные, цифры, спецсимволы — не менее трёх классов)."
+    },
+    {
+      "id": "ext.audit_log_perms",
+      "title": "Журнал аудита недоступен прочим пользователям",
+      "category": "Регистрация событий",
+      "description": "Проверяется, что у файла /var/log/audit/audit.log сняты права чтения и записи для категории «прочие».",
+      "rationale": "Журнал аудита содержит сведения о действиях пользователей; доступ на запись позволяет стереть следы, на чтение — изучить защиту.",
+      "keywords": [
+        "журнал аудита",
+        "права доступа",
+        "audit.log",
+        "защита журналов"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [],
+      "check": {
+        "type": "unix:file_test",
+        "object": {
+          "path": "/var/log/audit",
+          "filename": "audit.log"
+        },
+        "state": {
+          "oread": {
+            "value": "false",
+            "operation": "equals",
+            "datatype": "boolean"
+          },
+          "owrite": {
+            "value": "false",
+            "operation": "equals",
+            "datatype": "boolean"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Выполнить chmod 0600 /var/log/audit/audit.log и chmod 0750 /var/log/audit; в /etc/audit/auditd.conf задать log_group = root."
+    },
+    {
+      "id": "ext.auditd_keep_logs",
+      "title": "Журналы аудита не удаляются при ротации",
+      "category": "Регистрация событий",
+      "description": "Проверяется содержимое файла /etc/audit/auditd.conf.",
+      "rationale": "При действии ROTATE старые журналы удаляются после заданного числа файлов; KEEP_LOGS сохраняет их для разбора инцидентов.",
+      "keywords": [
+        "хранение журналов",
+        "auditd.conf",
+        "max_log_file_action",
+        "ротация"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": [
+          "Astra Linux",
+          "Debian",
+          "Ubuntu",
+          "РЕД ОС",
+          "ALT Linux",
+          "SberLinux"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Допустимые значения (регулярное выражение)",
+          "default": "^[Kk][Ee][Ee][Pp]_[Ll][Oo][Gg][Ss]$",
+          "datatype": "string"
+        }
+      ],
+      "check": {
+        "type": "ind:textfilecontent54_test",
+        "object": {
+          "path": "/etc/audit",
+          "filename": "auditd.conf",
+          "pattern": "^[[:space:]]*max_log_file_action[[:space:]]*=[[:space:]]*([A-Za-z_]+)"
+        },
+        "state": {
+          "subexpression": {
+            "value": "{{value}}",
+            "operation": "pattern match",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "В /etc/audit/auditd.conf задать max_log_file_action = keep_logs и обеспечить архивирование журналов.",
+      "notes": "При keep_logs журналы накапливаются — нужен регламент их архивирования и контроль свободного места."
+    },
+    {
+      "id": "ext.win_ntlmv2",
+      "title": "Только NTLMv2: LM и NTLMv1 запрещены",
+      "category": "Сетевые службы",
+      "description": "Проверяется параметр реестра HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa\\LmCompatibilityLevel.",
+      "rationale": "LM и NTLMv1 позволяют перехватить и подобрать хеш пароля; ФСТЭК относит их использование к типовым ошибкам конфигурации.",
+      "keywords": [
+        "ntlm",
+        "ntlmv1",
+        "ntlmv2",
+        "lan manager",
+        "lmcompatibilitylevel"
+      ],
+      "platforms": {
+        "family": "windows",
+        "os": [
+          "Windows 10",
+          "Windows 11",
+          "Windows Server 2016",
+          "Windows Server 2019",
+          "Windows Server 2022"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Ожидаемое значение",
+          "default": "5",
+          "datatype": "int"
+        }
+      ],
+      "check": {
+        "type": "windows:registry_test",
+        "object": {
+          "hive": "HKEY_LOCAL_MACHINE",
+          "key": "SYSTEM\\CurrentControlSet\\Control\\Lsa",
+          "name": "LmCompatibilityLevel"
+        },
+        "state": {
+          "value": {
+            "value": "{{value}}",
+            "operation": "greater than or equal",
+            "datatype": "int"
+          }
+        },
+        "check": "all",
+        "check_existence": "at_least_one_exists"
+      },
+      "remediation": "Задать политику «Сетевая безопасность: уровень проверки подлинности LAN Manager» = «Отправлять только NTLMv2-ответ. Отказывать LM и NTLM»."
+    },
+    {
+      "id": "ext.win_autologon",
+      "title": "Автоматический вход в систему отключён",
+      "category": "Управление доступом",
+      "description": "Проверяется, что параметр AutoAdminLogon не включает автоматический вход.",
+      "rationale": "При автоматическом входе пароль хранится в реестре, а сеанс открывается без участия пользователя.",
+      "keywords": [
+        "autoadminlogon",
+        "автовход",
+        "автоматический вход"
+      ],
+      "platforms": {
+        "family": "windows",
+        "os": [
+          "Windows 10",
+          "Windows 11",
+          "Windows Server 2016",
+          "Windows Server 2019",
+          "Windows Server 2022"
+        ]
+      },
+      "params": [],
+      "check": {
+        "type": "windows:registry_test",
+        "object": {
+          "hive": "HKEY_LOCAL_MACHINE",
+          "key": "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon",
+          "name": "AutoAdminLogon"
+        },
+        "state": {
+          "value": {
+            "value": "0",
+            "operation": "equals",
+            "datatype": "string"
+          }
+        },
+        "check": "all",
+        "check_existence": "any_exist"
+      },
+      "remediation": "Задать AutoAdminLogon = 0 и удалить параметр DefaultPassword в ключе Winlogon."
+    },
+    {
+      "id": "ext.win_lockout",
+      "title": "Блокировка учётной записи после неудачных попыток входа (Windows)",
+      "category": "Парольная политика",
+      "description": "Проверяется, что порог блокировки учётной записи задан и не превышает допустимого.",
+      "rationale": "Блокировка после нескольких неудачных попыток делает подбор пароля практически невозможным.",
+      "keywords": [
+        "блокировка",
+        "lockout",
+        "неудачные попытки входа"
+      ],
+      "platforms": {
+        "family": "windows",
+        "os": [
+          "Windows 10",
+          "Windows 11",
+          "Windows Server 2016",
+          "Windows Server 2019",
+          "Windows Server 2022"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Наибольший допустимый порог",
+          "default": "5",
+          "datatype": "int"
+        }
+      ],
+      "checks": [
+        {
+          "type": "windows:lockoutpolicy_test",
+          "object": {},
+          "state": {
+            "lockout_threshold": {
+              "value": "{{value}}",
+              "operation": "less than or equal",
+              "datatype": "int"
+            }
+          },
+          "check": "all",
+          "check_existence": "at_least_one_exists"
+        },
+        {
+          "type": "windows:lockoutpolicy_test",
+          "object": {},
+          "state": {
+            "lockout_threshold": {
+              "value": "0",
+              "operation": "greater than",
+              "datatype": "int"
+            }
+          },
+          "check": "all",
+          "check_existence": "at_least_one_exists"
+        }
+      ],
+      "remediation": "Задать политику «Пороговое значение блокировки» от 1 до 5 неудачных попыток."
+    },
+    {
+      "id": "ext.win_inactivity",
+      "title": "Блокировка сеанса при бездействии (Windows)",
+      "category": "Управление доступом",
+      "description": "Проверяется, что сеанс блокируется после заданного времени бездействия.",
+      "rationale": "Оставленный открытым сеанс позволяет воспользоваться им любому, кто окажется за компьютером.",
+      "keywords": [
+        "бездействие",
+        "блокировка сеанса",
+        "inactivity"
+      ],
+      "platforms": {
+        "family": "windows",
+        "os": [
+          "Windows 10",
+          "Windows 11",
+          "Windows Server 2016",
+          "Windows Server 2019",
+          "Windows Server 2022"
+        ]
+      },
+      "params": [
+        {
+          "name": "value",
+          "title": "Наибольшее время бездействия, секунд",
+          "default": "900",
+          "datatype": "int"
+        }
+      ],
+      "checks": [
+        {
+          "type": "windows:registry_test",
+          "object": {
+            "hive": "HKEY_LOCAL_MACHINE",
+            "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+            "name": "InactivityTimeoutSecs"
+          },
+          "state": {
+            "value": {
+              "value": "{{value}}",
+              "operation": "less than or equal",
+              "datatype": "int"
+            }
+          },
+          "check": "all",
+          "check_existence": "at_least_one_exists"
+        },
+        {
+          "type": "windows:registry_test",
+          "object": {
+            "hive": "HKEY_LOCAL_MACHINE",
+            "key": "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System",
+            "name": "InactivityTimeoutSecs"
+          },
+          "state": {
+            "value": {
+              "value": "0",
+              "operation": "greater than",
+              "datatype": "int"
+            }
+          },
+          "check": "all",
+          "check_existence": "at_least_one_exists"
+        }
+      ],
+      "remediation": "Задать политику «Интерактивный вход в систему: предел простоя компьютера» не более 900 секунд."
+    },
+    {
+      "id": "ext.org_virtualization",
+      "title": "Защита среды виртуализации",
+      "category": "Организационные меры",
+      "description": "Защита гипервизора, виртуальных машин и средств управления средой виртуализации.",
+      "rationale": "Требование относится к инфраструктуре виртуализации, а не к настройкам отдельного узла.",
+      "keywords": [
+        "виртуализация",
+        "гипервизор"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": []
+      },
+      "manual": true,
+      "remediation": "Защита гипервизора, виртуальных машин и средств управления средой виртуализации.",
+      "notes": "Требование относится к инфраструктуре виртуализации, а не к настройкам отдельного узла."
+    },
+    {
+      "id": "ext.org_containers",
+      "title": "Защита контейнерных сред",
+      "category": "Организационные меры",
+      "description": "Защита сред выполнения контейнеров, образов и средств оркестрации.",
+      "rationale": "Проверяется средствами защиты контейнерной инфраструктуры, а не OVAL-проверками узла.",
+      "keywords": [
+        "контейнеры",
+        "оркестрация"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": []
+      },
+      "manual": true,
+      "remediation": "Защита сред выполнения контейнеров, образов и средств оркестрации.",
+      "notes": "Проверяется средствами защиты контейнерной инфраструктуры, а не OVAL-проверками узла."
+    },
+    {
+      "id": "ext.org_email",
+      "title": "Защита сервисов электронной почты",
+      "category": "Организационные меры",
+      "description": "Фильтрация почтового трафика, защита от фишинга и вредоносных вложений.",
+      "rationale": "Требование относится к почтовой инфраструктуре организации.",
+      "keywords": [
+        "электронная почта",
+        "фишинг"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": []
+      },
+      "manual": true,
+      "remediation": "Фильтрация почтового трафика, защита от фишинга и вредоносных вложений.",
+      "notes": "Требование относится к почтовой инфраструктуре организации."
+    },
+    {
+      "id": "ext.org_web_api",
+      "title": "Защита веб-технологий и программных интерфейсов",
+      "category": "Организационные меры",
+      "description": "Защита веб-приложений и программных интерфейсов (API), включая межсетевые экраны уровня приложений.",
+      "rationale": "Требование относится к прикладным сервисам и их окружению.",
+      "keywords": [
+        "веб-приложения",
+        "api"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": []
+      },
+      "manual": true,
+      "remediation": "Защита веб-приложений и программных интерфейсов (API), включая межсетевые экраны уровня приложений.",
+      "notes": "Требование относится к прикладным сервисам и их окружению."
+    },
+    {
+      "id": "ext.org_mobile",
+      "title": "Защита мобильных устройств",
+      "category": "Организационные меры",
+      "description": "Управление мобильными устройствами и контроль их доступа к информационным ресурсам.",
+      "rationale": "Требование реализуется средствами управления мобильными устройствами.",
+      "keywords": [
+        "мобильные устройства",
+        "mdm"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": []
+      },
+      "manual": true,
+      "remediation": "Управление мобильными устройствами и контроль их доступа к информационным ресурсам.",
+      "notes": "Требование реализуется средствами управления мобильными устройствами."
+    },
+    {
+      "id": "ext.org_wireless",
+      "title": "Защита беспроводного доступа",
+      "category": "Организационные меры",
+      "description": "Контроль точек беспроводного доступа и защита беспроводных соединений.",
+      "rationale": "Требование относится к сетевой инфраструктуре.",
+      "keywords": [
+        "wi-fi",
+        "беспроводной доступ"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": []
+      },
+      "manual": true,
+      "remediation": "Контроль точек беспроводного доступа и защита беспроводных соединений.",
+      "notes": "Требование относится к сетевой инфраструктуре."
+    },
+    {
+      "id": "ext.org_ddos",
+      "title": "Защита от атак «отказ в обслуживании»",
+      "category": "Организационные меры",
+      "description": "Защита сервисов от атак на доступность.",
+      "rationale": "Требование реализуется на уровне сетевого периметра и провайдера.",
+      "keywords": [
+        "ddos",
+        "отказ в обслуживании"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": []
+      },
+      "manual": true,
+      "remediation": "Защита сервисов от атак на доступность.",
+      "notes": "Требование реализуется на уровне сетевого периметра и провайдера."
+    },
+    {
+      "id": "ext.org_monitoring",
+      "title": "Мониторинг информационной безопасности",
+      "category": "Организационные меры",
+      "description": "Сбор, анализ событий безопасности и реагирование на инциденты.",
+      "rationale": "Требование относится к процессам мониторинга; техническая часть — сбор журналов — проверяется отдельно.",
+      "keywords": [
+        "мониторинг",
+        "инциденты",
+        "siem"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": []
+      },
+      "manual": true,
+      "remediation": "Сбор, анализ событий безопасности и реагирование на инциденты.",
+      "notes": "Требование относится к процессам мониторинга; техническая часть — сбор журналов — проверяется отдельно."
+    },
+    {
+      "id": "ext.org_antivirus",
+      "title": "Антивирусная защита",
+      "category": "Организационные меры",
+      "description": "Применение средств антивирусной защиты на узлах и регулярное обновление баз.",
+      "rationale": "Наличие и работа средства антивирусной защиты проверяются средствами управления этим средством.",
+      "keywords": [
+        "антивирус",
+        "вредоносный код"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": []
+      },
+      "manual": true,
+      "remediation": "Применение средств антивирусной защиты на узлах и регулярное обновление баз.",
+      "notes": "Наличие и работа средства антивирусной защиты проверяются средствами управления этим средством."
+    },
+    {
+      "id": "ext.org_ids",
+      "title": "Обнаружение и предотвращение вторжений",
+      "category": "Организационные меры",
+      "description": "Применение средств обнаружения и предотвращения вторжений на сетевом уровне.",
+      "rationale": "Требование реализуется сетевыми средствами защиты, а не настройками отдельного узла.",
+      "keywords": [
+        "обнаружение вторжений",
+        "сов"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": []
+      },
+      "manual": true,
+      "remediation": "Применение средств обнаружения и предотвращения вторжений на сетевом уровне.",
+      "notes": "Требование реализуется сетевыми средствами защиты, а не настройками отдельного узла."
+    },
+    {
+      "id": "ext.org_backup",
+      "title": "Резервное копирование",
+      "category": "Организационные меры",
+      "description": "Регулярное резервное копирование информации и конфигураций, проверка восстановления из резервных копий.",
+      "rationale": "Требование относится к процессу резервного копирования: подтверждается регламентом, журналами заданий и тестами восстановления.",
+      "keywords": [
+        "резервное копирование",
+        "восстановление"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": []
+      },
+      "manual": true,
+      "remediation": "Регулярное резервное копирование информации и конфигураций, проверка восстановления из резервных копий.",
+      "notes": "Требование относится к процессу резервного копирования: подтверждается регламентом, журналами заданий и тестами восстановления."
+    },
+    {
+      "id": "ext.org_vuln_mgmt",
+      "title": "Управление уязвимостями и обновлениями",
+      "category": "Организационные меры",
+      "description": "Регулярное выявление уязвимостей, оценка и своевременная установка обновлений безопасности.",
+      "rationale": "Требование относится к процессу управления уязвимостями; его выполнение показывают средства сканирования и управления обновлениями, а не настройки отдельного узла.",
+      "keywords": [
+        "уязвимости",
+        "обновления безопасности",
+        "патчи"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": []
+      },
+      "manual": true,
+      "remediation": "Регулярное выявление уязвимостей, оценка и своевременная установка обновлений безопасности.",
+      "notes": "Требование относится к процессу управления уязвимостями; его выполнение показывают средства сканирования и управления обновлениями, а не настройки отдельного узла."
+    },
+    {
+      "id": "ext.org_software_restriction",
+      "title": "Ограничение программной среды",
+      "category": "Организационные меры",
+      "description": "Запуск только разрешённого программного обеспечения: замкнутая программная среда, контроль запуска приложений.",
+      "rationale": "Реализуется встроенными механизмами ОС (например, ЗПС в Astra Linux SE, AppLocker в Windows) и проверяется их средствами.",
+      "keywords": [
+        "замкнутая программная среда",
+        "applocker",
+        "белый список"
+      ],
+      "platforms": {
+        "family": "unix",
+        "os": []
+      },
+      "manual": true,
+      "remediation": "Запуск только разрешённого программного обеспечения: замкнутая программная среда, контроль запуска приложений.",
+      "notes": "Реализуется встроенными механизмами ОС (например, ЗПС в Astra Linux SE, AppLocker в Windows) и проверяется их средствами."
+    }
+  ]
+}

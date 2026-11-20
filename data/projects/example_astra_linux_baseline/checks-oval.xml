@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<oval_definitions xmlns="http://oval.mitre.org/XMLSchema/oval-definitions-5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:oval="http://oval.mitre.org/XMLSchema/oval-common-5" xmlns:ind="http://oval.mitre.org/XMLSchema/oval-definitions-5#independent" xmlns:unix="http://oval.mitre.org/XMLSchema/oval-definitions-5#unix" xmlns:linux="http://oval.mitre.org/XMLSchema/oval-definitions-5#linux">
+  <generator>
+    <oval:product_name>Custom</oval:product_name>
+    <oval:schema_version>5.11.2</oval:schema_version>
+    <oval:timestamp>2026-10-04T11:23:30Z</oval:timestamp>
+    <oval:product_version>1.0</oval:product_version>
+  </generator>
+  <definitions>
+    <definition id="oval:custom:def:1" version="1" class="compliance">
+      <metadata>
+        <title>Запрет входа суперпользователя по SSH</title>
+        <description>Проверяется, что параметр PermitRootLogin в /etc/ssh/sshd_config имеет значение no.</description>
+        <affected family="unix">
+          <platform>Astra Linux</platform>
+        </affected>
+      </metadata>
+      <criteria>
+        <criterion test_ref="oval:custom:tst:1" comment="Проверка: Запрет входа суперпользователя по SSH"/>
+      </criteria>
+    </definition>
+    <definition id="oval:custom:def:2" version="1" class="compliance">
+      <metadata>
+        <title>Запрет входа по SSH с пустым паролем</title>
+        <description>Проверяется, что параметр PermitEmptyPasswords в /etc/ssh/sshd_config имеет значение no.</description>
+        <affected family="unix">
+          <platform>Astra Linux</platform>
+        </affected>
+      </metadata>
+      <criteria>
+        <criterion test_ref="oval:custom:tst:2" comment="Проверка: Запрет входа по SSH с пустым паролем"/>
+      </criteria>
+    </definition>
+    <definition id="oval:custom:def:3" version="1" class="compliance">
+      <metadata>
+        <title>Ограничение числа попыток аутентификации по SSH</title>
+        <description>Проверяется, что параметр MaxAuthTries в /etc/ssh/sshd_config не превышает заданного значения.</description>
+        <affected family="unix">
+          <platform>Astra Linux</platform>
+        </affected>
+      </metadata>
+      <criteria>
+        <criterion test_ref="oval:custom:tst:3" comment="Проверка: Ограничение числа попыток аутентификации по SSH"/>
+      </criteria>
+    </definition>
+    <definition id="oval:custom:def:4" version="1" class="compliance">
+      <metadata>
+        <title>Минимальная длина пароля</title>
+        <description>Проверяется, что параметр minlen в /etc/security/pwquality.conf задаёт длину пароля не меньше требуемой.</description>
+        <affected family="unix">
+          <platform>Astra Linux</platform>
+        </affected>
+      </metadata>
+      <criteria>
+        <criterion test_ref="oval:custom:tst:4" comment="Проверка: Минимальная длина пароля"/>
+      </criteria>
+    </definition>
+    <definition id="oval:custom:def:5" version="1" class="compliance">
+      <metadata>
+        <title>Максимальный срок действия пароля</title>
+        <description>Проверяется, что параметр PASS_MAX_DAYS в /etc/login.defs не превышает заданного значения.</description>
+        <affected family="unix">
+          <platform>Astra Linux</platform>
+        </affected>
+      </metadata>
+      <criteria>
+        <criterion test_ref="oval:custom:tst:5" comment="Проверка: Максимальный срок действия пароля"/>
+      </criteria>
+    </definition>
+    <definition id="oval:custom:def:6" version="1" class="compliance">
+      <metadata>
+        <title>Отключение переадресации IP-пакетов</title>
+        <description>Проверяется, что параметр ядра net.ipv4.ip_forward равен 0.</description>
+        <affected family="unix">
+          <platform>Astra Linux</platform>
+        </affected>
+      </metadata>
+      <criteria>
+        <criterion test_ref="oval:custom:tst:6" comment="Проверка: Отключение переадресации IP-пакетов"/>
+      </criteria>
+    </definition>
+    <definition id="oval:custom:def:7" version="1" class="compliance">
+      <metadata>
+        <title>Рандомизация адресного пространства</title>
+        <description>Проверяется, что параметр ядра kernel.randomize_va_space равен 2.</description>
+        <affected family="unix">
+          <platform>Astra Linux</platform>
+        </affected>
+      </metadata>
+      <criteria>
+        <criterion test_ref="oval:custom:tst:7" comment="Проверка: Рандомизация адресного пространства"/>
+      </criteria>
+    </definition>
+    <definition id="oval:custom:def:8" version="1" class="compliance">
+      <metadata>
+        <title>Владелец файла /etc/passwd</title>
+        <description>Проверяется, что владельцем файла /etc/passwd является суперпользователь (uid 0).</description>
+        <affected family="unix">
+          <platform>Astra Linux</platform>
+        </affected>
+      </metadata>
+      <criteria>
+        <criterion test_ref="oval:custom:tst:8" comment="Проверка: Владелец файла /etc/passwd"/>
+      </criteria>
+    </definition>
+    <definition id="oval:custom:def:9" version="1" class="compliance">
+      <metadata>
+        <title>Файл /etc/shadow недоступен для чтения прочим пользователям</title>
+        <description>Проверяется, что у файла /etc/shadow снят бит чтения для категории «прочие».</description>
+        <affected family="unix">
+          <platform>Astra Linux</platform>
+        </affected>
+      </metadata>
+      <criteria>
+        <criterion test_ref="oval:custom:tst:9" comment="Проверка: Файл /etc/shadow недоступен для чтения прочим пользователям"/>
+      </criteria>
+    </definition>
+    <definition id="oval:custom:def:10" version="1" class="compliance">
+      <metadata>
+        <title>Наличие подсистемы аудита</title>
+        <description>Проверяется, что в системе установлен пакет подсистемы аудита.</description>
+        <affected family="unix">
+          <platform>Astra Linux</platform>
+        </affected>
+      </metadata>
+      <criteria>
+        <criterion test_ref="oval:custom:tst:10" comment="Проверка: Наличие подсистемы аудита"/>
+      </criteria>
+    </definition>
+    <definition id="oval:custom:def:11" version="1" class="compliance">
+      <metadata>
+        <title>Служба аудита запущена</title>
+        <description>Проверяется, что служба auditd находится в активном состоянии.</description>
+        <affected family="unix">
+          <platform>Astra Linux</platform>
+        </affected>
+      </metadata>
+      <criteria>
+        <criterion test_ref="oval:custom:tst:11" comment="Проверка: Служба аудита запущена"/>
+      </criteria>
+    </definition>
+    <definition id="oval:custom:def:12" version="1" class="compliance">
+      <metadata>
+        <title>Порт telnet не прослушивается</title>
+        <description>Проверяется, что в системе нет службы, прослушивающей TCP-порт 23.</description>
+        <affected family="unix">
+          <platform>Astra Linux</platform>
+        </affected>
+      </metadata>
+      <criteria>
+        <criterion test_ref="oval:custom:tst:12" comment="Проверка: Порт telnet не прослушивается"/>
+      </criteria>
+    </definition>
+  </definitions>
+  <tests>
+    <ind:textfilecontent54_test id="oval:custom:tst:1" version="1" check="all" check_existence="at_least_one_exists" comment="Проверка: Запрет входа суперпользователя по SSH">
+      <ind:object object_ref="oval:custom:obj:1"/>
+      <ind:state state_ref="oval:custom:ste:1"/>
+    </ind:textfilecontent54_test>
+    <ind:textfilecontent54_test id="oval:custom:tst:2" version="1" check="all" check_existence="at_least_one_exists" comment="Проверка: Запрет входа по SSH с пустым паролем">
+      <ind:object object_ref="oval:custom:obj:2"/>
+      <ind:state state_ref="oval:custom:ste:2"/>
+    </ind:textfilecontent54_test>
+    <ind:textfilecontent54_test id="oval:custom:tst:3" version="1" check="all" check_existence="at_least_one_exists" comment="Проверка: Ограничение числа попыток аутентификации по SSH">
+      <ind:object object_ref="oval:custom:obj:3"/>
+      <ind:state state_ref="oval:custom:ste:3"/>
+    </ind:textfilecontent54_test>
+    <ind:textfilecontent54_test id="oval:custom:tst:4" version="1" check="all" check_existence="at_least_one_exists" comment="Проверка: Минимальная длина пароля">
+      <ind:object object_ref="oval:custom:obj:4"/>
+      <ind:state state_ref="oval:custom:ste:4"/>
+    </ind:textfilecontent54_test>
+    <ind:textfilecontent54_test id="oval:custom:tst:5" version="1" check="all" check_existence="at_least_one_exists" comment="Проверка: Максимальный срок действия пароля">
+      <ind:object object_ref="oval:custom:obj:5"/>
+      <ind:state state_ref="oval:custom:ste:5"/>
+    </ind:textfilecontent54_test>
+    <unix:sysctl_test id="oval:custom:tst:6" version="1" check="all" check_existence="at_least_one_exists" comment="Проверка: Отключение переадресации IP-пакетов">
+      <unix:object object_ref="oval:custom:obj:6"/>
+      <unix:state state_ref="oval:custom:ste:6"/>
+    </unix:sysctl_test>
+    <unix:sysctl_test id="oval:custom:tst:7" version="1" check="all" check_existence="at_least_one_exists" comment="Проверка: Рандомизация адресного пространства">
+      <unix:object object_ref="oval:custom:obj:7"/>
+      <unix:state state_ref="oval:custom:ste:7"/>
+    </unix:sysctl_test>
+    <unix:file_test id="oval:custom:tst:8" version="1" check="all" check_existence="at_least_one_exists" comment="Проверка: Владелец файла /etc/passwd">
+      <unix:object object_ref="oval:custom:obj:8"/>
+      <unix:state state_ref="oval:custom:ste:8"/>
+    </unix:file_test>
+    <unix:file_test id="oval:custom:tst:9" version="1" check="all" check_existence="at_least_one_exists" comment="Проверка: Файл /etc/shadow недоступен для чтения прочим пользователям">
+      <unix:object object_ref="oval:custom:obj:9"/>
+      <unix:state state_ref="oval:custom:ste:9"/>
+    </unix:file_test>
+    <linux:dpkginfo_test id="oval:custom:tst:10" version="1" check="all" check_existence="at_least_one_exists" comment="Проверка: Наличие подсистемы аудита">
+      <linux:object object_ref="oval:custom:obj:10"/>
+    </linux:dpkginfo_test>
+    <linux:systemdunitproperty_test id="oval:custom:tst:11" version="1" check="all" check_existence="at_least_one_exists" comment="Проверка: Служба аудита запущена">
+      <linux:object object_ref="oval:custom:obj:11"/>
+      <linux:state state_ref="oval:custom:ste:10"/>
+    </linux:systemdunitproperty_test>
+    <linux:inetlisteningservers_test id="oval:custom:tst:12" version="1" check="all" check_existence="none_exist" comment="Проверка: Порт telnet не прослушивается">
+      <linux:object object_ref="oval:custom:obj:12"/>
+    </linux:inetlisteningservers_test>
+  </tests>
+  <objects>
+    <ind:textfilecontent54_object id="oval:custom:obj:1" version="1" comment="Запрет входа суперпользователя по SSH">
+      <ind:path>/etc/ssh</ind:path>
+      <ind:filename>sshd_config</ind:filename>
+      <ind:pattern operation="pattern match">^[[:space:]]*PermitRootLogin[[:space:]]+([a-zA-Z-]+)</ind:pattern>
+      <ind:instance datatype="int" operation="greater than or equal">1</ind:instance>
+    </ind:textfilecontent54_object>
+    <ind:textfilecontent54_object id="oval:custom:obj:2" version="1" comment="Запрет входа по SSH с пустым паролем">
+      <ind:path>/etc/ssh</ind:path>
+      <ind:filename>sshd_config</ind:filename>
+      <ind:pattern operation="pattern match">^[[:space:]]*PermitEmptyPasswords[[:space:]]+([a-zA-Z-]+)</ind:pattern>
+      <ind:instance datatype="int" operation="greater than or equal">1</ind:instance>
+    </ind:textfilecontent54_object>
+    <ind:textfilecontent54_object id="oval:custom:obj:3" version="1" comment="Ограничение числа попыток аутентификации по SSH">
+      <ind:path>/etc/ssh</ind:path>
+      <ind:filename>sshd_config</ind:filename>
+      <ind:pattern operation="pattern match">^[[:space:]]*MaxAuthTries[[:space:]]+([0-9]+)</ind:pattern>
+      <ind:instance datatype="int" operation="greater than or equal">1</ind:instance>
+    </ind:textfilecontent54_object>
+    <ind:textfilecontent54_object id="oval:custom:obj:4" version="1" comment="Минимальная длина пароля">
+      <ind:path>/etc/security</ind:path>
+      <ind:filename>pwquality.conf</ind:filename>
+      <ind:pattern operation="pattern match">^[[:space:]]*minlen[[:space:]]*=[[:space:]]*([0-9]+)</ind:pattern>
+      <ind:instance datatype="int" operation="greater than or equal">1</ind:instance>
+    </ind:textfilecontent54_object>
+    <ind:textfilecontent54_object id="oval:custom:obj:5" version="1" comment="Максимальный срок действия пароля">
+      <ind:path>/etc</ind:path>
+      <ind:filename>login.defs</ind:filename>
+      <ind:pattern operation="pattern match">^[[:space:]]*PASS_MAX_DAYS[[:space:]]+([0-9]+)</ind:pattern>
+      <ind:instance datatype="int" operation="greater than or equal">1</ind:instance>
+    </ind:textfilecontent54_object>
+    <unix:sysctl_object id="oval:custom:obj:6" version="1" comment="Отключение переадресации IP-пакетов">
+      <unix:name>net.ipv4.ip_forward</unix:name>
+    </unix:sysctl_object>
+    <unix:sysctl_object id="oval:custom:obj:7" version="1" comment="Рандомизация адресного пространства">
+      <unix:name>kernel.randomize_va_space</unix:name>
+    </unix:sysctl_object>
+    <unix:file_object id="oval:custom:obj:8" version="1" comment="Владелец файла /etc/passwd">
+      <unix:path>/etc</unix:path>
+      <unix:filename>passwd</unix:filename>
+    </unix:file_object>
+    <unix:file_object id="oval:custom:obj:9" version="1" comment="Файл /etc/shadow недоступен для чтения прочим пользователям">
+      <unix:path>/etc</unix:path>
+      <unix:filename>shadow</unix:filename>
+    </unix:file_object>
+    <linux:dpkginfo_object id="oval:custom:obj:10" version="1" comment="Наличие подсистемы аудита">
+      <linux:name>auditd</linux:name>
+    </linux:dpkginfo_object>
+    <linux:systemdunitproperty_object id="oval:custom:obj:11" version="1" comment="Служба аудита запущена">
+      <linux:unit>auditd.service</linux:unit>
+      <linux:property>ActiveState</linux:property>
+    </linux:systemdunitproperty_object>
+    <linux:inetlisteningservers_object id="oval:custom:obj:12" version="1" comment="Порт telnet не прослушивается">
+      <linux:protocol>tcp</linux:protocol>
+      <linux:local_address operation="pattern match">.*</linux:local_address>
+      <linux:local_port datatype="int">23</linux:local_port>
+    </linux:inetlisteningservers_object>
+  </objects>
+  <states>
+    <ind:textfilecontent54_state id="oval:custom:ste:1" version="1" comment="Ожидаемое значение: Запрет входа суперпользователя по SSH">
+      <ind:subexpression datatype="string" operation="pattern match" var_ref="oval:custom:var:1"/>
+    </ind:textfilecontent54_state>
+    <ind:textfilecontent54_state id="oval:custom:ste:2" version="1" comment="Ожидаемое значение: Запрет входа по SSH с пустым паролем">
+      <ind:subexpression datatype="string" operation="pattern match" var_ref="oval:custom:var:2"/>
+    </ind:textfilecontent54_state>
+    <ind:textfilecontent54_state id="oval:custom:ste:3" version="1" comment="Ожидаемое значение: Ограничение числа попыток аутентификации по SSH">
+      <ind:subexpression datatype="string" operation="pattern match" var_ref="oval:custom:var:3"/>
+    </ind:textfilecontent54_state>
+    <ind:textfilecontent54_state id="oval:custom:ste:4" version="1" comment="Ожидаемое значение: Минимальная длина пароля">
+      <ind:subexpression datatype="string" operation="pattern match" var_ref="oval:custom:var:4"/>
+    </ind:textfilecontent54_state>
+    <ind:textfilecontent54_state id="oval:custom:ste:5" version="1" comment="Ожидаемое значение: Максимальный срок действия пароля">
+      <ind:subexpression datatype="string" operation="pattern match" var_ref="oval:custom:var:5"/>
+    </ind:textfilecontent54_state>
+    <unix:sysctl_state id="oval:custom:ste:6" version="1" comment="Ожидаемое значение: Отключение переадресации IP-пакетов">
+      <unix:value datatype="int" operation="equals" var_ref="oval:custom:var:6"/>
+    </unix:sysctl_state>
+    <unix:sysctl_state id="oval:custom:ste:7" version="1" comment="Ожидаемое значение: Рандомизация адресного пространства">
+      <unix:value datatype="int" operation="equals" var_ref="oval:custom:var:7"/>
+    </unix:sysctl_state>
+    <unix:file_state id="oval:custom:ste:8" version="1" comment="Ожидаемое значение: Владелец файла /etc/passwd">
+      <unix:user_id datatype="int" operation="equals" var_ref="oval:custom:var:8"/>
+    </unix:file_state>
+    <unix:file_state id="oval:custom:ste:9" version="1" comment="Ожидаемое значение: Файл /etc/shadow недоступен для чтения прочим пользователям">
+      <unix:oread datatype="boolean" operation="equals" var_ref="oval:custom:var:9"/>
+    </unix:file_state>
+    <linux:systemdunitproperty_state id="oval:custom:ste:10" version="1" comment="Ожидаемое значение: Служба аудита запущена">
+      <linux:value datatype="string" operation="equals" var_ref="oval:custom:var:10"/>
+    </linux:systemdunitproperty_state>
+  </states>
+  <variables>
+    <constant_variable id="oval:custom:var:1" version="1" datatype="string" comment="Ожидаемое значение: Запрет входа суперпользователя по SSH">
+      <value>^no$</value>
+    </constant_variable>
+    <constant_variable id="oval:custom:var:2" version="1" datatype="string" comment="Ожидаемое значение: Запрет входа по SSH с пустым паролем">
+      <value>^no$</value>
+    </constant_variable>
+    <constant_variable id="oval:custom:var:3" version="1" datatype="string" comment="Ожидаемое значение: Ограничение числа попыток аутентификации по SSH">
+      <value>^[1-4]$</value>
+    </constant_variable>
+    <constant_variable id="oval:custom:var:4" version="1" datatype="string" comment="Ожидаемое значение: Минимальная длина пароля">
+      <value>^(1[4-9]|[2-9][0-9]|[0-9]{3,})$</value>
+    </constant_variable>
+    <constant_variable id="oval:custom:var:5" version="1" datatype="string" comment="Ожидаемое значение: Максимальный срок действия пароля">
+      <value>^([1-9]|[1-8][0-9]|90)$</value>
+    </constant_variable>
+    <constant_variable id="oval:custom:var:6" version="1" datatype="int" comment="Ожидаемое значение: Отключение переадресации IP-пакетов">
+      <value>0</value>
+    </constant_variable>
+    <constant_variable id="oval:custom:var:7" version="1" datatype="int" comment="Ожидаемое значение: Рандомизация адресного пространства">
+      <value>2</value>
+    </constant_variable>
+    <constant_variable id="oval:custom:var:8" version="1" datatype="int" comment="Ожидаемое значение: Владелец файла /etc/passwd">
+      <value>0</value>
+    </constant_variable>
+    <constant_variable id="oval:custom:var:9" version="1" datatype="boolean" comment="Ожидаемое значение: Файл /etc/shadow недоступен для чтения прочим пользователям">
+      <value>false</value>
+    </constant_variable>
+    <constant_variable id="oval:custom:var:10" version="1" datatype="string" comment="Ожидаемое значение: Служба аудита запущена">
+      <value>active</value>
+    </constant_variable>
+  </variables>
+</oval_definitions>

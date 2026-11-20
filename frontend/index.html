@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Конструктор профилей соответствия (XCCDF/OVAL)</title>
+<link rel="icon" type="image/png" href="/static/img/profile-builder.png" />
+<link rel="stylesheet" href="/static/style.css" />
+<script src="/static/boot.js"></script>
+</head>
+<body>
+
+<div id="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <img class="brand-mark" src="/static/img/profile-builder.png" width="32" height="32" alt="" />
+      <div>
+        <div class="brand-title" data-i18n="brand-title">Конструктор профилей</div>
+        <div class="brand-sub">XCCDF / OVAL</div>
+      </div>
+      <div class="brand-actions">
+        <button class="btn-icon sidebar-toggle" id="btn-sidebar-toggle" title="Проекты" aria-expanded="false">☰</button>
+        <button class="btn-icon lang-toggle" id="btn-lang-toggle" title="Сменить язык / Switch language">RU</button>
+        <button class="btn-icon theme-toggle" id="btn-theme-toggle" title="Переключить тему / Switch theme">☾</button>
+      </div>
+    </div>
+
+    <div class="sidebar-section" id="sidebar-body">
+      <div class="sidebar-section-head">
+        <span data-i18n="sidebar-projects">Проекты</span>
+        <button class="btn-icon" id="btn-new-project" title="Новый проект">+</button>
+      </div>
+      <div id="project-list" class="project-list"></div>
+      <!-- Создание проекта из готовых материалов -->
+      <div class="nav-group">
+        <div class="nav-group-title" data-i18n="nav-create">Создать из файла</div>
+        <label class="nav-item" for="import-file">
+          <svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>
+          <span data-i18n="sidebar-import">Импорт ZIP…</span>
+        </label>
+        <input type="file" id="import-file" accept=".zip" hidden />
+        <label class="nav-item" for="doc-file">
+          <svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>
+          <span data-i18n="sidebar-doc">Загрузить документ…</span>
+        </label>
+        <input type="file" id="doc-file" accept=".docx,.odt,.txt,.md" hidden />
+      </div>
+
+      <!-- Справочные материалы -->
+      <div class="nav-group">
+        <div class="nav-group-title" data-i18n="nav-reference">Справочники</div>
+        <button type="button" class="nav-item" id="btn-knowledge">
+          <svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M8 7h7"/></svg>
+          <span data-i18n="sidebar-kb">База знаний</span>
+        </button>
+        <button type="button" class="nav-item" id="btn-help">
+          <svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01"/></svg>
+          <span data-i18n="sidebar-help">Справка и настройки</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+  <!-- На узком экране: текущий проект под шапкой, по нажатию раскрывается список -->
+
+  <main class="main">
+    <div id="view-root"></div>
+  </main>
+</div>
+
+<div id="modal-root"></div>
+<div id="toast-root" class="toast-root"></div>
+
+<script src="/static/i18n.js"></script>
+<script src="/static/api.js"></script>
+<!-- Интерфейс: обычные скрипты по порядку, общая область видимости; main.js — последним -->
+<script src="/static/js/core.js"></script>
+<script src="/static/js/wizard.js"></script>
+<script src="/static/js/rules.js"></script>
+<script src="/static/js/oval.js"></script>
+<script src="/static/js/projects.js"></script>
+<script src="/static/js/documents.js"></script>
+<script src="/static/js/knowledge.js"></script>
+<script src="/static/js/catalog-picker.js"></script>
+<script src="/static/js/onboarding.js"></script>
+<script src="/static/js/main.js"></script>
+</body>
+</html>
