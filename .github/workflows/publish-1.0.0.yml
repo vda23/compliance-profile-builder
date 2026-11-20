@@ -1,0 +1,41 @@
+name: Publish Compliance Profile Builder 1.0.0
+on:
+  push:
+    branches: [release/publish-1.0.0]
+    paths: [.github/workflows/publish-1.0.0.yml]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      RELEASE_COMMIT: 75b8cc6cabb4f5915e3d81b206b5a83bd704e815
+    steps:
+      - name: Build ZIP from the versioned sources
+        run: |
+          set -euo pipefail
+          git init -q source
+          git -C source fetch -q --depth=1 "https://github.com/${GITHUB_REPOSITORY}.git" "$RELEASE_COMMIT"
+          git -C source archive --format=zip --prefix=compliance-profile-builder/ \
+            --output="$GITHUB_WORKSPACE/compliance-profile-builder-v1.0.0.zip" "$RELEASE_COMMIT" \
+            -- README.md install.sh uninstall.sh backend frontend data
+          unzip -tq compliance-profile-builder-v1.0.0.zip
+      - name: Publish tag and attach installation ZIP
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cat > "$RUNNER_TEMP/release-notes.md" <<'EOF'
+          Конструктор профилей соответствия XCCDF 1.1 и OVAL 5.11.2 для Kaspersky Vulnerability Management. Версия включает пошаговый мастер, каталог проверок для Windows и Linux, подготовку черновика по документу и отчёт о покрытии.
+
+          Исходники доступны в репозитории. В установочный ZIP входят сервис, два демонстрационных проекта и значок для вкладки браузера и интерфейса.
+
+          При создании проектов используйте уникальные идентификаторы. При подготовке черновика по документу сверяйте числовые условия проверок с исходными требованиями. Перед экспортом запустите проверку проекта.
+
+          Для установки на Linux распакуйте архив, перейдите в каталог `compliance-profile-builder` и выполните `sudo bash install.sh`.
+          EOF
+          gh release create v1.0.0 compliance-profile-builder-v1.0.0.zip \
+            --repo "$GITHUB_REPOSITORY" --target "$RELEASE_COMMIT" \
+            --title "Compliance Profile Builder 1.0.0" --notes-file "$RUNNER_TEMP/release-notes.md"
